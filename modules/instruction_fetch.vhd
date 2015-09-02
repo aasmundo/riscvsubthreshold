@@ -8,9 +8,13 @@ entity instruction_fetch is
 	clk : in std_logic;	
 	nreset : in std_logic;
 	
+	--from other stages
 	branch_or_jump : in std_logic;
 	boj_target : in std_logic_vector(31 downto 0);
-	stall : in std_logic
+	stall : in std_logic;
+	
+	--to IFID preg
+	instruction_o : out std_logic_vector(31 downto 0)
 	);
 end instruction_fetch;
 
@@ -21,7 +25,9 @@ signal PC_incr : std_logic_vector(31 downto 0);
 signal instruction : std_logic_vector(31 downto 0);
 begin
 
-PC_we <= not stall;	
+PC_we <= not stall;
+instruction_o <= instruction;
+
 PC : entity work.PC port map(
 	clk => clk,
 	we => PC_we,
