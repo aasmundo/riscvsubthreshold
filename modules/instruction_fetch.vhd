@@ -1,6 +1,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
-
+library work;
+use work.constants.all;
 
 entity instruction_fetch is
 	port(
@@ -41,10 +42,10 @@ PC_input_MUX : entity work.MUX2_32_bit port map(
 	output => PC_in
 	);
 instruction_memory : entity work.SP_32bit generic map(
-address_width => 8) 
+address_width => INSTRUCTION_MEM_WIDTH) 
 port map (
 clk => clk,
-address => PC_out(7 downto 0),
+address => PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0),
 data_in => x"00000000",
 data_out => instruction,
 we => '0'
