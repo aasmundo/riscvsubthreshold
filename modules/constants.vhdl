@@ -14,5 +14,10 @@ package constants is
 	constant ALU_OR_OPCODE  : std_logic_vector(ALU_OPCODE_WIDTH - 2 downto 0) := "100";
 	constant ALU_XOR_OPCODE : std_logic_vector(ALU_OPCODE_WIDTH - 2 downto 0) := "101";
 	
+	--Other constants--
+	
+	constant INSTRUCTION_MEM_WIDTH : integer := 8;
+	
+	
 
 end constants;
