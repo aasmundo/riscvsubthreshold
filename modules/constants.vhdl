@@ -18,6 +18,16 @@ package constants is
 	
 	constant INSTRUCTION_MEM_WIDTH : integer := 8;
 	
+	--Immediate constants--
+	
+	--constant OPCODE_I_TYPE : std_logic_vector(6 downto 0) := "00-0011";  --incorrect
+	constant OPCODE_S_TYPE     : std_logic_vector(6 downto 0) := "0100011";
+	constant OPCODE_SB_TYPE    : std_logic_vector(6 downto 0) := "1100011";
+	constant OPCODE_U_TYPE     : std_logic_vector(6 downto 0) := "0-10111";
+	constant OPCODE_UB_TYPE    : std_logic_vector(6 downto 0) := "1101111";
+	constant OPCODE_SHAMT_TYPE : std_logic_vector(6 downto 0) := "0010011";
+	
+
 	
 
 end constants;
