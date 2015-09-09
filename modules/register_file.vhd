@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use ieee.numeric_std.all; 
 
-entity registers is	
+entity register_file is	
 	port(
 	clk, 
 	reg_write 						: in std_logic; 
@@ -15,13 +15,11 @@ entity registers is
 	read_data_1, 
 	read_data_2 					: out std_logic_vector(31 downto 0)
 	);											   
-end registers;
+end register_file;
 
-architecture behave of registers is
+architecture behave of register_file is
 type register_array is array(1 to 31) of std_logic_vector(31 downto 0);
 signal register_a : register_array;
-signal read_data_1_signal, read_data_2_signal : std_logic_vector(31 downto 0);
-signal is_zero_1, is_zero_2 : std_logic; 
 begin	
 	
 combi : process(read_register_1, read_register_2,register_a)
