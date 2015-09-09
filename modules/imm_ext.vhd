@@ -8,7 +8,8 @@ use work.constants.all;
 entity imm_ext is
 	port(
 	instr : in std_logic_vector(31 downto 0);
-	imm : out std_logic_vector(31 downto 0)
+	imm : out std_logic_vector(31 downto 0);
+	is_imm : out std_logic
 	);
 end imm_ext;
 
@@ -29,13 +30,17 @@ shamt_type <= x"000000" & "000" & instr(24 downto 20);
 
 process(opcode, i_type, s_type, sb_type, u_type, ub_type)
 begin
+	is_imm <= '1';
 	case(opcode) is
-		when OPCODE_S_TYPE     => imm <= s_type;
-		when OPCODE_SB_TYPE    => imm <= sb_type;
-		when OPCODE_U_TYPE     => imm <= u_type;
-		when OPCODE_UB_TYPE    => imm <= ub_type;	
-		when OPCODE_SHAMT_TYPE => imm <= shamt_type;
-		when others            => imm <= i_type;
+		when OPCODE_S_TYPE                      => imm <= s_type;
+		when OPCODE_SB_TYPE                     => imm <= sb_type;
+		when OPCODE_U_TYPE                      => imm <= u_type;
+		when OPCODE_UB_TYPE                     => imm <= ub_type;	
+		when OPCODE_SHAMT_TYPE                  => imm <= shamt_type;
+		when OPCODE_I_TYPE_A | OPCODE_I_TYPE_B  => imm <= i_type;
+		when others                             => 
+			imm <= i_type;
+			is_imm <= '0';
 	end case;
 end process;
 end behave;

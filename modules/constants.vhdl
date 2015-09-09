@@ -20,7 +20,8 @@ package constants is
 	
 	--Immediate constants--
 	
-	--constant OPCODE_I_TYPE : std_logic_vector(6 downto 0) := "00-0011";  --incorrect
+	constant OPCODE_I_TYPE_A   : std_logic_vector(6 downto 0) := "00-0011"; 
+	constant OPCODE_I_TYPE_B   : std_logic_vector(6 downto 0) := "1100111"; 
 	constant OPCODE_S_TYPE     : std_logic_vector(6 downto 0) := "0100011";
 	constant OPCODE_SB_TYPE    : std_logic_vector(6 downto 0) := "1100011";
 	constant OPCODE_U_TYPE     : std_logic_vector(6 downto 0) := "0-10111";
