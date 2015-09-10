@@ -22,6 +22,8 @@ entity instruction_decode is
 	reg2 : out std_logic_vector(31 downto 0);
 	imm  : out std_logic_vector(31 downto 0);
 	is_imm : out std_logic;
+	rs1 : out std_logic_vector(4 downto 0);
+	rs2 : out std_logic_vector(4 downto 0);
 	rd : out std_logic_vector(4 downto 0)
 	);
 end instruction_decode;
@@ -30,7 +32,6 @@ end instruction_decode;
 architecture behave of instruction_decode is
 signal opcode   : std_logic_vector(6 downto 0);
 signal funct7   : std_logic_vector(6 downto 0);
-signal rs1, rs2 : std_logic_vector(4 downto 0);
 begin
 
 opcode <= instr(6 downto 0);
@@ -52,8 +53,8 @@ immediate_extender : entity work.imm_ext port map
 register_file : entity work.register_file port map
 	(
 		clk => clk,
-		read_register_1 => rs1,
-		read_register_2 => rs2,
+		read_register_1 => instr(19 downto 15),
+		read_register_2 => instr(24 downto 20),
 		write_register  => wb_reg,
 		reg_write       => wb_write,
 		write_data      => wb_data,
