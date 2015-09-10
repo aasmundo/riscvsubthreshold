@@ -70,13 +70,13 @@ begin
 	case funct3 is
 		when ALU_ADD_SUB_OPCODE => result <= std_logic_vector(add_sub_res);
 		when ALU_SRL_SRA_OPCODE => result <= std_logic_vector(srl_sra_res);
-		when ALU_SLTU_OPCODE => result <= std_logic_vector(x"0000000" & "000" & sltu_res);
-		when ALU_SLL_OPCODE => result <= std_logic_vector(sll_res);
-		when ALU_SLT_OPCODE => result <= std_logic_vector(x"0000000" & "000" & slt_res);
-		when ALU_AND_OPCODE => result <= std_logic_vector(and_res);
-		when ALU_OR_OPCODE  => result <= std_logic_vector(or_res);
-		when ALU_XOR_OPCODE => result <= std_logic_vector(xor_res);
-		when others 		=> result <= x"00000000";
+		when ALU_SLTU_OPCODE    => result <= std_logic_vector(x"0000000" & "000" & sltu_res);
+		when ALU_SLL_OPCODE     => result <= std_logic_vector(sll_res);
+		when ALU_SLT_OPCODE     => result <= std_logic_vector(x"0000000" & "000" & slt_res);
+		when ALU_AND_OPCODE     => result <= std_logic_vector(and_res);
+		when ALU_OR_OPCODE      => result <= std_logic_vector(or_res);
+		when ALU_XOR_OPCODE     => result <= std_logic_vector(xor_res);
+		when others 		    => result <= x"00000000";
 	end case;
 end process;
 
