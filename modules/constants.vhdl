@@ -28,6 +28,12 @@ package constants is
 	constant OPCODE_UB_TYPE    : std_logic_vector(6 downto 0) := "1101111";
 	constant OPCODE_SHAMT_TYPE : std_logic_vector(6 downto 0) := "0010011";
 	
+	--Execute constants--
+	
+	constant ID  : std_logic_vector(1 downto 0) := "00";
+	constant MEM : std_logic_vector(1 downto 0) := "01";
+	constant WB  : std_logic_vector(1 downto 0) := "10";
+	
 
 	
 

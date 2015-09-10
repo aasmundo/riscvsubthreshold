@@ -1,0 +1,77 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+library work;
+use work.constants.all;
+
+entity execute is
+	port(
+	--from instruction decode
+	    opcode_5 : in std_logic;
+		funct7_5 : in std_logic;
+		funct3 : in std_logic_vector(FUNCT3_WIDTH - 1 downto 0);
+		
+		ALU_b_src : in std_logic;
+		reg1 : in std_logic_vector(31 downto 0);
+		reg2 : in std_logic_vector(31 downto 0);
+		imm : in std_logic_vector(31 downto 0);
+		is_imm : in std_logic;
+		rs1 : in std_logic_vector(4 downto 0);
+		rs2 : in std_logic_vector(4 downto 0);
+		rd : in std_logic_vector(4 downto 0);
+		
+	--from memory
+		rd_dest_mem : in std_logic_vector(4 downto 0);
+		rd_data_mem : in std_logic_vector(31 downto 0);
+		rd_we_mem   : in std_logic;
+		
+	--from write back
+		rd_dest_wb : in std_logic_vector(4 downto 0);
+		rd_data_wb : in std_logic_vector(31 downto 0);
+		rd_we_wb : in std_logic;
+		
+		
+	--//\\--
+		ALU_result : out std_logic_vector(31 downto 0)
+		
+	);
+end execute;
+
+architecture behave of execute is
+signal ALU_a_in, ALU_b_in, b_reg : std_logic_vector(31 downto 0);
+
+signal reg_a_src , reg_b_src : std_logic_vector(1 downto 0);
+begin
+
+alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg)
+begin
+	case(reg_a_src) is 
+		when ID     => ALU_a_in <= reg1;
+		when MEM    => ALU_a_in <= rd_data_mem;
+		when WB     => ALU_a_in <= rd_data_wb;
+		when others => ALU_a_in <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+	end case;
+	
+	case(reg_b_src) is
+		when ID     => b_reg <= reg2;
+		when MEM    => b_reg <= rd_data_mem;
+		when WB     => b_reg <= rd_data_wb;
+		when others => b_reg <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+	end case;
+	
+	if(is_imm = '1') then
+		ALU_b_in <= imm;
+	else
+		ALU_b_in <= b_reg;
+	end if;
+
+end process;
+
+Arithmetic_logic_unit : entity work.ALU port map(
+	A => ALU_a_in,
+	B => ALU_b_in,
+	opcode_5 => opcode_5,
+	funct7_5 => funct7_5,
+	funct3 => funct3,
+	result => ALU_result
+	);
+end behave;
