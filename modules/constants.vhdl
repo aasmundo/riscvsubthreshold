@@ -31,8 +31,8 @@ package constants is
 	--Execute constants--
 	
 	constant ID  : std_logic_vector(1 downto 0) := "00";
-	constant MEM : std_logic_vector(1 downto 0) := "01";
-	constant WB  : std_logic_vector(1 downto 0) := "10";
+	constant MEM : std_logic_vector(1 downto 0) := "1-";
+	constant WB  : std_logic_vector(1 downto 0) := "01";
 	
 
 	

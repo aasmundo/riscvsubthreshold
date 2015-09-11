@@ -44,14 +44,14 @@ begin
 
 alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg)
 begin
-	case(reg_a_src) is 
+	reg_a_input_src_mux : case(reg_a_src) is 
 		when ID     => ALU_a_in <= reg1;
 		when MEM    => ALU_a_in <= rd_data_mem;
 		when WB     => ALU_a_in <= rd_data_wb;
 		when others => ALU_a_in <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 	end case;
 	
-	case(reg_b_src) is
+	reg_b_input_src_mux : case(reg_b_src) is
 		when ID     => b_reg <= reg2;
 		when MEM    => b_reg <= rd_data_mem;
 		when WB     => b_reg <= rd_data_wb;
@@ -73,5 +73,16 @@ Arithmetic_logic_unit : entity work.ALU port map(
 	funct7_5 => funct7_5,
 	funct3 => funct3,
 	result => ALU_result
+	);
+	
+data_forwarder : entity work.forwarder port map(
+	rs1_ex => rs1,
+	rs2_ex => rs2,
+	rd_mem => rd_dest_mem,
+	rd_wb  => rd_dest_wb,
+	rd_mem_we => rd_we_mem,
+	rd_wb_we => rd_we_wb,
+	rs1_src => reg_a_src,
+	rs2_src => reg_b_src
 	);
 end behave;
