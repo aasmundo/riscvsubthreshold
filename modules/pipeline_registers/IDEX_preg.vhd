@@ -8,7 +8,6 @@ entity IDEX_preg is
 		clk : in std_logic;
 		flush : in std_logic;
 
-		funct3_out : out std_logic_vector(FUNCT3_WIDTH - 1 downto 0);
 		
 		ALU_operation_in : in std_logic_Vector(3 downto 0);	  
 		ALU_operation_out : out std_logic_Vector(3 downto 0);
@@ -20,8 +19,6 @@ entity IDEX_preg is
 		rs1_out : out std_logic_vector(4 downto 0);
 		rs2_out : out std_logic_vector(4 downto 0);
 		rd_out : out std_logic_vector(4 downto 0);
-
-		funct3_in : in std_logic_vector(FUNCT3_WIDTH - 1 downto 0);
 		
 		ALU_b_src_in : in std_logic;
 		reg1_in : in std_logic_vector(31 downto 0);
@@ -43,10 +40,8 @@ seq : process(clk, ALU_b_src_in, reg1_in, reg2_in, imm_in, is_imm_in, rs1_in, rs
 begin
 	if(clk'event and clk = '1') then
 		if(flush = '1') then
-			funct3_out <= "000";
 			rd_out <= "00000";
 		else
-			funct3_out <= funct3_in;
 			rd_out <= rd_in;
 		end if;
 		ALU_b_src_out <= ALU_b_src_in;
