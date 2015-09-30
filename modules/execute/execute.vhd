@@ -6,10 +6,8 @@ use work.constants.all;
 entity execute is
 	port(
 	--from instruction decode
-	    opcode_5 : in std_logic;
-		funct7_5 : in std_logic;
-		funct3 : in std_logic_vector(FUNCT3_WIDTH - 1 downto 0);
 		
+		ALU_operation : in std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
 		ALU_b_src : in std_logic;
 		reg1 : in std_logic_vector(31 downto 0);
 		reg2 : in std_logic_vector(31 downto 0);
@@ -69,9 +67,7 @@ end process;
 Arithmetic_logic_unit : entity work.ALU port map(
 	A => ALU_a_in,
 	B => ALU_b_in,
-	opcode_5 => opcode_5,
-	funct7_5 => funct7_5,
-	funct3 => funct3,
+	operation => ALU_operation,
 	result => ALU_result
 	);
 	
