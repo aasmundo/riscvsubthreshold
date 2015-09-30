@@ -13,11 +13,7 @@ entity instruction_decode is
 	wb_data : in std_logic_vector(31 downto 0);
 	wb_write : in std_logic;
 	
-	opcode_5 : out std_logic;
-	funct7_5 : out std_logic;
-	funct3 : out std_logic_vector(FUNCT3_WIDTH - 1 downto 0);
 	
-	ALU_b_src : out std_logic;
 	reg1 : out std_logic_vector(31 downto 0);
 	reg2 : out std_logic_vector(31 downto 0);
 	imm  : out std_logic_vector(31 downto 0);
@@ -36,9 +32,7 @@ begin
 
 opcode <= instr(6 downto 0);
 funct7 <= instr(31 downto 25);
-funct3 <= instr(14 downto 12);
-funct7_5 <= funct7(5);
-opcode_5 <= opcode(5);
+
 rd <= instr(11 downto 7); 
 rs1 <= instr(19 downto 15);
 rs2 <= instr(24 downto 20);
