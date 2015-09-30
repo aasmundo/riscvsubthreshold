@@ -25,6 +25,18 @@ signal PC_incr : std_logic_vector(31 downto 0);
 signal instruction : std_logic_vector(31 downto 0);
 begin
 
+	
+combi : process(PC_incr, boj_target, branch_or_jump, PC_in)
+
+begin
+	case(branch_or_jump) is
+		when '0'    => PC_in <= PC_incr;
+		when '1'    => PC_in <= boj_target;
+		when others => PC_in <= UNKNOWN_32BIT;
+	end case;
+end process;
+	
+	
 PC_we <= not stall;
 instruction_o <= instruction;
 
@@ -41,12 +53,6 @@ PC_incrementer : entity work.PC_increment port map(
 	output => PC_incr
 	);
 	
-PC_input_MUX : entity work.MUX2_32_bit port map(
-	a => PC_incr,
-	b => boj_target,
-	sel => branch_or_jump,
-	output => PC_in
-	);
 instruction_memory : entity work.SP_32bit generic map(
 address_width => INSTRUCTION_MEM_WIDTH) 
 port map (
