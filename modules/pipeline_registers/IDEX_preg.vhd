@@ -11,7 +11,6 @@ entity IDEX_preg is
 		
 		ALU_operation_in : in std_logic_Vector(3 downto 0);	  
 		ALU_operation_out : out std_logic_Vector(3 downto 0);
-		ALU_b_src_out : out std_logic;
 		reg1_out : out std_logic_vector(31 downto 0);
 		reg2_out : out std_logic_vector(31 downto 0);
 		imm_out : out std_logic_vector(31 downto 0);
@@ -20,7 +19,6 @@ entity IDEX_preg is
 		rs2_out : out std_logic_vector(4 downto 0);
 		rd_out : out std_logic_vector(4 downto 0);
 		
-		ALU_b_src_in : in std_logic;
 		reg1_in : in std_logic_vector(31 downto 0);
 		reg2_in : in std_logic_vector(31 downto 0);
 		imm_in : in std_logic_vector(31 downto 0);
