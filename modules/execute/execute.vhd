@@ -8,7 +8,6 @@ entity execute is
 	--from instruction decode
 		
 		ALU_operation : in std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
-		ALU_b_src : in std_logic;
 		reg1 : in std_logic_vector(31 downto 0);
 		reg2 : in std_logic_vector(31 downto 0);
 		imm : in std_logic_vector(31 downto 0);
