@@ -17,8 +17,7 @@ end ALU;
 
 architecture ALU_arch of ALU is
 signal add_res, sub_res, and_res, or_res, xor_res, add_sub_res, 
-	   sll_res, sra_res, srl_res, srl_sra_res : signed(31 downto 0);
-signal slt_res, sltu_res : std_logic;
+	   sll_res, sra_res, srl_res, srl_sra_res, slt_res, sltu_res : signed(31 downto 0);
 begin
 
 
@@ -26,11 +25,11 @@ combi: process(A, B)
 begin	
 	add_res <= signed(A) + signed(B);
 	sub_res <= signed(A) - signed(B);
-	if(signed(A) < signed(B)) then slt_res <= '1';	
-	else 						   slt_res <= '0';	
+	if(signed(A) < signed(B)) then slt_res <= x"00000001";	
+	else 						   slt_res <= x"00000000";	
 	end if;
-	if(unsigned(A) < unsigned(B)) then sltu_res <= '1';	
-	else  							   sltu_res <= '0';			
+	if(unsigned(A) < unsigned(B)) then sltu_res <= x"00000001";	
+	else  							   sltu_res <= x"00000000";			
 	end if;
 	
 	and_res <= signed(A and B);
@@ -53,9 +52,9 @@ begin
 		when ALU_SUB_OPCODE     => result <= std_logic_vector(sub_res);
 		when ALU_SRL_OPCODE     => result <= std_logic_vector(srl_res);
 		when ALU_SRA_OPCODE     => result <= std_logic_vector(sra_res);
-		when ALU_SLTU_OPCODE    => result <= std_logic_vector(x"0000000" & "000" & sltu_res);
+		when ALU_SLTU_OPCODE    => result <= std_logic_vector(sltu_res);
 		when ALU_SLL_OPCODE     => result <= std_logic_vector(sll_res);
-		when ALU_SLT_OPCODE     => result <= std_logic_vector(x"0000000" & "000" & slt_res);
+		when ALU_SLT_OPCODE     => result <= std_logic_vector(slt_res);
 		when ALU_AND_OPCODE     => result <= std_logic_vector(and_res);
 		when ALU_OR_OPCODE      => result <= std_logic_vector(or_res);
 		when ALU_XOR_OPCODE     => result <= std_logic_vector(xor_res);
