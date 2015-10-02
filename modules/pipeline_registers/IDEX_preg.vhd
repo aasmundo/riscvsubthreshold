@@ -34,7 +34,7 @@ architecture behave of IDEX_preg is
 
 begin
 	
-seq : process(clk, ALU_b_src_in, reg1_in, reg2_in, imm_in, is_imm_in, rs1_in, rs2_in, rd_in, ALU_operation_in)
+seq : process(clk, reg1_in, reg2_in, imm_in, is_imm_in, rs1_in, rs2_in, rd_in, ALU_operation_in)
 begin
 	if(clk'event and clk = '1') then
 		if(flush = '1') then
@@ -42,7 +42,6 @@ begin
 		else
 			rd_out <= rd_in;
 		end if;
-		ALU_b_src_out <= ALU_b_src_in;
 		reg1_out <= reg1_in;
 		reg2_out <= reg2_in;
 		imm_out <= imm_in;
