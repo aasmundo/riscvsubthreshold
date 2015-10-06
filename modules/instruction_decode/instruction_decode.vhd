@@ -20,7 +20,16 @@ entity instruction_decode is
 	is_imm : out std_logic;
 	rs1 : out std_logic_vector(4 downto 0);
 	rs2 : out std_logic_vector(4 downto 0);
-	rd : out std_logic_vector(4 downto 0)
+	rd : out std_logic_vector(4 downto 0);
+	
+	--control
+	mem_we : std_logic;
+	mem_be : std_logic_vector(1 downto 0);
+	wb_src : std_logic;
+	wb_we  : std_logic;
+	ALU_operation : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
+	is_branch : std_logic
+	
 	);
 end instruction_decode;
 
