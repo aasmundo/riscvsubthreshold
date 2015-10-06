@@ -9,8 +9,8 @@ entity IDEX_preg is
 		flush : in std_logic;
 
 		
-		ALU_operation_in : in std_logic_Vector(3 downto 0);	  
-		ALU_operation_out : out std_logic_Vector(3 downto 0);
+		ALU_operation_in : in std_logic_Vector(ALU_OPCODE_WIDTH - 1 downto 0);	  
+		ALU_operation_out : out std_logic_Vector(ALU_OPCODE_WIDTH - 1 downto 0);
 		reg1_out : out std_logic_vector(31 downto 0);
 		reg2_out : out std_logic_vector(31 downto 0);
 		imm_out : out std_logic_vector(31 downto 0);
@@ -25,7 +25,18 @@ entity IDEX_preg is
 		is_imm_in : in std_logic;
 		rs1_in : in std_logic_vector(4 downto 0);
 		rs2_in : in std_logic_vector(4 downto 0);
-		rd_in : in std_logic_vector(4 downto 0)
+		rd_in : in std_logic_vector(4 downto 0);
+		
+		mem_we_in : in std_logic;
+		mem_be_in : in std_logic_vector(1 downto 0);
+		wb_src_in : in std_logic;
+		wb_we_in  : in std_logic;
+		mem_we_out : out std_logic;
+		mem_be_out : out std_logic_vector(1 downto 0);
+		wb_src_out : out std_logic;
+		wb_we_out  : out std_logic;
+		is_branch_in : in std_logic;
+		is_branch_out : out std_logic
 
 	);
 end IDEX_preg;
@@ -34,14 +45,22 @@ architecture behave of IDEX_preg is
 
 begin
 	
-seq : process(clk, reg1_in, reg2_in, imm_in, is_imm_in, rs1_in, rs2_in, rd_in, ALU_operation_in)
+seq : process(clk, flush)
 begin
 	if(clk'event and clk = '1') then
 		if(flush = '1') then
-			rd_out <= "00000";
+			rd_out     <= "00000";
+			mem_we_out <= '0';
+			wb_we_out  <= '0';
+			is_branch_out  <= '0';
 		else
 			rd_out <= rd_in;
+			mem_we_out <= mem_we_in;
+			wb_we_out  <= wb_we_in;
+			is_branch_out <= is_branch_in;
 		end if;
+		ALU_operation_out <= ALU_operation_in;
+		mem_be_out <= mem_be_in;
 		reg1_out <= reg1_in;
 		reg2_out <= reg2_in;
 		imm_out <= imm_in;
