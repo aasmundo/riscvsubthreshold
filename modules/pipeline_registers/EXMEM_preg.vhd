@@ -20,9 +20,7 @@ entity EXMEM_preg is
 	mem_write_width_in : in std_logic_vector(1 downto 0);
 	mem_write_width_out : out std_logic_vector(1 downto 0);
 	is_branch_in : in std_logic;
-	is_branch_out : out std_logic;
-	funct3_in : in std_logic_vector(FUNCT3_WIDTH - 1 downto 0);
-	funct3_out : out std_logic_vector(FUNCT3_WIDTH - 1 downto 0);  
+	is_branch_out : out std_logic;  
 	
 	
 	-- WB control --
