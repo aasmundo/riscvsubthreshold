@@ -23,12 +23,12 @@ entity instruction_decode is
 	rd : out std_logic_vector(4 downto 0);
 	
 	--control
-	mem_we : std_logic;
-	mem_be : std_logic_vector(1 downto 0);
-	wb_src : std_logic;
-	wb_we  : std_logic;
+	mem_we : out std_logic;
+	mem_be : out std_logic_vector(1 downto 0);
+	wb_src : out std_logic;
+	wb_we  : out std_logic;
 	ALU_operation : out std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
-	is_branch : std_logic
+	is_branch : out std_logic
 	
 	);
 end instruction_decode;
@@ -66,6 +66,18 @@ register_file : entity work.register_file port map
 		read_data_2     => reg2		
 	);
 
+	
+control : entity work.control port map
+	(
+		opcode => instr(6 downto 0),
+		funct3 => instr(14 downto 12),
+		wb_we => wb_we,	
+		wb_src => wb_src,
+		mem_we => mem_we,
+		mem_write_width => mem_be,
+		is_branch => is_branch
+	);
+	
 alu_decode_helper <= instr(30) & instr(14 downto 12) & instr(6 downto 0);	
 decode : process(instr)
 begin
