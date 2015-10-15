@@ -28,7 +28,8 @@ entity instruction_decode is
 	wb_src : out std_logic;
 	wb_we  : out std_logic;
 	ALU_operation : out std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
-	is_branch : out std_logic
+	is_branch : out std_logic;
+	mem_load_unsigned : out std_logic
 	
 	);
 end instruction_decode;
@@ -36,16 +37,15 @@ end instruction_decode;
 
 architecture behave of instruction_decode is
 signal opcode   : std_logic_vector(6 downto 0);
-signal funct7   : std_logic_vector(6 downto 0);
 signal alu_decode_helper : std_logic_vector(10 downto 0);
 begin
 
 opcode <= instr(6 downto 0);
-funct7 <= instr(31 downto 25);
 
 rd <= instr(11 downto 7); 
 rs1 <= instr(19 downto 15);
 rs2 <= instr(24 downto 20);
+
 
 immediate_extender : entity work.imm_ext port map
 	(
@@ -75,35 +75,37 @@ control : entity work.control port map
 		wb_src => wb_src,
 		mem_we => mem_we,
 		mem_write_width => mem_be,
-		is_branch => is_branch
+		is_branch => is_branch,
+		mem_load_unsigned => mem_load_unsigned
 	);
 	
 alu_decode_helper <= instr(30) & instr(14 downto 12) & instr(6 downto 0);	
-decode : process(instr)
+decode : process(alu_decode_helper)
 begin
 	alu_opcode_decode : case(alu_decode_helper) is
 		when "00000110011" =>  --ADD
 			ALU_operation <= ALU_ADD_OPCODE;
-		when "-0000010011" =>  --ADDI
+		when "00000010011" | "10000010011"  =>  --ADDI
 			ALU_operation <= ALU_ADD_OPCODE;
 		when "10000110011" =>  --SUB
 			ALU_operation <= ALU_SUB_OPCODE;
-		when "-0010-10011" =>  --SLL & SLLI
+		when "00010010011" | "00010110011" | "10010010011" | "10010110011" =>  --SLL & SLLI
 			ALU_operation <= ALU_SLL_OPCODE;
-		when "-0100-10011" =>  --SLT & SLTI
+		when "00100010011" | "00100110011" | "10100010011" | "10100110011" =>  --SLT & SLTI
 			ALU_operation <= ALU_SLT_OPCODE;
-		when "-0110-10011" =>  --SLTU & SLTIU
+		when "00110010011" | "00110110011" | "10110010011" | "10110110011" =>  --SLTU & SLTIU
 			ALU_operation <= ALU_SLTU_OPCODE;
-		when "-1000-10011" =>  --XOR & XORI
+		when "01000010011" | "01000110011" | "11000010011" | "11000110011" =>  --XOR & XORI
 			ALU_operation <= ALU_XOR_OPCODE;
-		when "01010-10011" =>  --SRL & SRLI
+		when "01010010011" | "01010110011" =>  --SRL & SRLI
 			ALU_operation <= ALU_SRL_OPCODE;
-		when "11010-10011" =>  --SRA & SRAI
+		when "11010010011" | "11010110011" =>  --SRA & SRAI
 			ALU_operation <= ALU_SRA_OPCODE;
-		when "-1100-10011" =>  --OR & ORI
+		when "01100010011" | "01100110011" | "11100010011" | "11100110011" =>  --OR & ORI
 			ALU_operation <= ALU_OR_OPCODE;
-		when "-1110-10011" => --AND & ANDI
+		when "01110010011" | "01110110011" | "11110010011" | "11110110011" => --AND & ANDI
 			ALU_operation <= ALU_AND_OPCODE;
+		
 		when others => 
 			ALU_operation <= ALU_ADD_OPCODE;
 	end case;

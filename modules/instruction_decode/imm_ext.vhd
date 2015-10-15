@@ -14,11 +14,14 @@ entity imm_ext is
 end imm_ext;
 
 architecture behave of imm_ext is
-signal i_type, s_type, sb_type, u_type, ub_type, shamt_type : std_logic_vector(31 downto 0);
+signal i_type, s_type, sb_type, u_type, ub_type, shamt_type, i_and_shamt_type : std_logic_vector(31 downto 0);
 signal opcode : std_logic_vector(6 downto 0);
+signal i_or_shamt : std_logic;
+signal funct3 : std_logic_vector(2 downto 0);
 begin
 	
-opcode <= instr(6 downto 0);	
+opcode <= instr(6 downto 0);
+funct3 <= instr(14 downto 12);
 	
 i_type  <= std_logic_vector(resize(signed(instr(31 downto 20)), imm'length));
 s_type  <= std_logic_vector(resize(signed(instr(31 downto 25) & instr(11 downto 7)), imm'length));
@@ -28,19 +31,33 @@ ub_type <= std_logic_vector(resize(signed(instr(31) & instr(19 downto 12) & inst
 shamt_type <= x"000000" & "000" & instr(24 downto 20);
 
 
-process(opcode, i_type, s_type, sb_type, u_type, ub_type)
+
+process(opcode, i_type, s_type, sb_type, u_type, ub_type, funct3, i_or_shamt, i_and_shamt_type)
 begin
 	is_imm <= '1';
 	case(opcode) is
-		when OPCODE_S_TYPE                      => imm <= s_type;
-		when OPCODE_SB_TYPE                     => imm <= sb_type;
-		when OPCODE_U_TYPE                      => imm <= u_type;
-		when OPCODE_UB_TYPE                     => imm <= ub_type;	
-		when OPCODE_SHAMT_TYPE                  => imm <= shamt_type;
-		when OPCODE_I_TYPE_A | OPCODE_I_TYPE_B  => imm <= i_type;
-		when others                             => 
+		when OPCODE_S_TYPE                       => imm <= s_type;
+		when OPCODE_SB_TYPE                      => imm <= sb_type;
+		when OPCODE_U_TYPE_1 | OPCODE_U_TYPE_2   => imm <= u_type;
+		when OPCODE_UB_TYPE                      => imm <= ub_type;	
+		when OPCODE_I_TYPE_A_2                   => imm <= i_and_shamt_type;
+		when OPCODE_I_TYPE_A_1 | OPCODE_I_TYPE_B => imm <= i_type;
+		when others                              => 
 			imm <= i_type;
 			is_imm <= '0';
 	end case;
+	
+	case(funct3) is
+		when "001" => i_or_shamt <= '0';
+		when "101" => i_or_shamt <= '0';
+		when others => i_or_shamt <= '1';
+	end case;
+	
+	if (i_or_shamt = '1') then 	i_and_shamt_type <= i_type;
+	else 						i_and_shamt_type <= shamt_type;
+	end if;
+	
+	
+		
 end process;
 end behave;
