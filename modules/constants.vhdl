@@ -23,18 +23,21 @@ package constants is
 	
 	--Immediate constants--
 	
-	constant OPCODE_I_TYPE_A   : std_logic_vector(6 downto 0) := "00-0011"; 
+	--constant OPCODE_I_TYPE_A   : std_logic_vector(6 downto 0) := "00-0011"; --vhdl2008
+	constant OPCODE_I_TYPE_A_1   : std_logic_vector(6 downto 0) := "0000011";
+	constant OPCODE_I_TYPE_A_2   : std_logic_vector(6 downto 0) := "0010011";
 	constant OPCODE_I_TYPE_B   : std_logic_vector(6 downto 0) := "1100111"; 
 	constant OPCODE_S_TYPE     : std_logic_vector(6 downto 0) := "0100011";
 	constant OPCODE_SB_TYPE    : std_logic_vector(6 downto 0) := "1100011";
-	constant OPCODE_U_TYPE     : std_logic_vector(6 downto 0) := "0-10111";
+	--constant OPCODE_U_TYPE     : std_logic_vector(6 downto 0) := "0-10111"; --vhdl2008
+	constant OPCODE_U_TYPE_1     : std_logic_vector(6 downto 0) := "0010111";
+	constant OPCODE_U_TYPE_2     : std_logic_vector(6 downto 0) := "0110111";
 	constant OPCODE_UB_TYPE    : std_logic_vector(6 downto 0) := "1101111";
-	constant OPCODE_SHAMT_TYPE : std_logic_vector(6 downto 0) := "0010011";
 	
 	--Execute constants--
 	
 	constant ID  : std_logic_vector(1 downto 0) := "00";
-	constant MEM : std_logic_vector(1 downto 0) := "1-";
+	constant MEM : std_logic_vector(1 downto 0) := "1-"; --vhdl2008
 	constant WB  : std_logic_vector(1 downto 0) := "01";
 	
 	--branch codes--
@@ -45,6 +48,8 @@ package constants is
 	constant BGE  : std_logic_vector(2 downto 0) := "101";
 	constant BLTU : std_logic_vector(2 downto 0) := "110";
 	constant BGEU : std_logic_vector(2 downto 0) := "111";
+	
+
 	
 	--data-memory--
 	constant DATA_MEM_WIDTH : integer := 8;
