@@ -28,7 +28,9 @@ entity IDEX_preg is
 		rd_in : in std_logic_vector(4 downto 0);
 		
 		mem_we_in : in std_logic;
-		mem_be_in : in std_logic_vector(1 downto 0);
+		mem_be_in : in std_logic_vector(1 downto 0); 
+		mem_load_unsigned_in : in std_logic;  
+		mem_load_unsigned_out : out std_logic;
 		wb_src_in : in std_logic;
 		wb_we_in  : in std_logic;
 		mem_we_out : out std_logic;
@@ -68,6 +70,8 @@ begin
 		rs1_out <= rs1_in;
 		rs2_out <= rs2_in;
 		ALU_operation_out <= ALU_operation_in;
+		wb_src_out <= wb_src_in;
+		mem_load_unsigned_out <= mem_load_unsigned_in;
 	end if;
 	
 	

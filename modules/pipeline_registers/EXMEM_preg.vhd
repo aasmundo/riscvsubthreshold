@@ -29,7 +29,9 @@ entity EXMEM_preg is
 	rd_out : out std_logic_vector(4 downto 0);
 	rd_we_out : out std_logic;
 	wb_src_in : in std_logic;
-	wb_src_out : out std_logic
+	wb_src_out : out std_logic;
+	mem_load_unsigned_in : in std_logic;  
+	mem_load_unsigned_out : out std_logic
 	);
 end EXMEM_preg;	  
 
@@ -54,6 +56,7 @@ begin
 		rs2_data_out <= rs2_data_in;  
 		wb_src_out <= wb_src_in;
 		mem_write_width_out <= mem_write_width_in;
+		mem_load_unsigned_out <= mem_load_unsigned_in;
 	end if;
 end process;
 end behave;

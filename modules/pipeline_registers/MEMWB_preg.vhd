@@ -11,15 +11,19 @@ entity MEMWB_preg is
 	
 	mem_read_data_in : in std_logic_vector(31 downto 0);
 	mem_read_data_out : out std_logic_vector(31 downto 0);
-	rs2_data_in : in std_logic_vector(31 downto 0);
-	rs2_data_out : out std_logic_vector(31 downto 0);
+	ALU_data_in : in std_logic_vector(31 downto 0);
+	ALU_data_out : out std_logic_vector(31 downto 0);
 	
 	wb_src_in : in std_logic;
 	wb_src_out : out std_logic;
 	wb_we_in : in std_logic;
 	wb_we_out : out std_logic;
 	rd_in : in std_logic_vector(4 downto 0);
-	rd_out : out std_logic_vector(4 downto 0)
+	rd_out : out std_logic_vector(4 downto 0);
+	mem_load_width_in : in std_logic_vector(1 downto 0);
+	mem_load_width_out : out std_logic_vector(1 downto 0);
+	mem_load_unsigned_in : in std_logic;  
+	mem_load_unsigned_out : out std_logic
 	
 	
 	);
@@ -28,7 +32,8 @@ end MEMWB_preg;
 architecture behave of MEMWB_preg is
 
 begin
-	
+
+mem_read_data_out <= mem_read_data_in;	--mem data is already sequential
 seq : process(clk, flush)
 begin
 	if(clk = '1' and clk'event) then
@@ -37,10 +42,11 @@ begin
 		else
 			wb_we_out <= wb_we_in;
 		end if;
-		mem_read_data_out <= mem_read_data_in;
 		wb_src_out <= wb_src_in;
 		rd_out <= rd_in;
-		rs2_data_out <= rs2_data_in;
+		ALU_data_out <= ALU_data_in;
+		mem_load_unsigned_out <= mem_load_unsigned_in;
+		mem_load_width_out <= mem_load_width_in;
 	end if;
 end process;
 	
