@@ -39,7 +39,7 @@ signal ALU_a_in, ALU_b_in, b_reg : std_logic_vector(31 downto 0);
 signal reg_a_src , reg_b_src : std_logic_vector(1 downto 0);
 begin
 
-alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg)
+alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg, reg_a_src, reg_b_src)
 begin
 	reg_a_input_src_mux : case(reg_a_src) is 
 		when ID     => ALU_a_in <= reg1;
