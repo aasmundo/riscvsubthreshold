@@ -27,16 +27,16 @@ begin
 		if(we = '1') then
 			ram(to_integer(unsigned(address))) <= write_data(7 downto 0);
 			if(byte_enable(1) = '1' or byte_enable(0) = '1') then
-				ram(to_integer(unsigned(address)) + 1) <= write_data(15 downto 8);
+				ram(to_integer(unsigned(address) + 1)) <= write_data(15 downto 8);
 			end if;
 			if(byte_enable(1) = '1') then
-				ram(to_integer(unsigned(address)) + 2) <= write_data(23 downto 16);
-				ram(to_integer(unsigned(address)) + 3) <= write_data(31 downto 24);
+				ram(to_integer(unsigned(address) + 2)) <= write_data(23 downto 16);
+				ram(to_integer(unsigned(address) + 3)) <= write_data(31 downto 24);
 			end if;
 		end if;
-		read_data <= ram(to_integer(unsigned(address)) + 3) &
-					 ram(to_integer(unsigned(address)) + 2) &
-					 ram(to_integer(unsigned(address)) + 1) &
+		read_data <= ram(to_integer(unsigned(address) + 3)) &
+					 ram(to_integer(unsigned(address) + 2)) &
+					 ram(to_integer(unsigned(address) + 1)) &
 					 ram(to_integer(unsigned(address))); 
 	end if;
 end process;
