@@ -57,6 +57,7 @@ package constants is
 	--misc--
 	constant UNKNOWN_32BIT : std_logic_vector(31 downto 0) := "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 	
+	constant PC_WIDTH : integer := 8;
 
 	
 
