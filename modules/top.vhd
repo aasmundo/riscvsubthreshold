@@ -14,15 +14,16 @@ end top;
 architecture behave of top is
 
 --Instruction fetch
-signal branch_or_jump : std_logic;
-signal boj_target : std_logic_vector(31 downto 0);
+signal branch_IF : std_logic;
+signal branch_target_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal stall_IF : std_logic;
 signal instruction_IF : std_logic_vector(31 downto 0);
+signal PC_incr_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
 
 --IFID pipline register
 signal instruction_IFID : std_logic_vector(31 downto 0);
 signal flush_IFID : std_logic;
-
+signal branch_target_IFID : std_logic_vector(PC_WIDTH - 1 downto 0);
 
 --Instruction decode
 signal reg1_ID : std_logic_vector(31 downto 0);
@@ -56,6 +57,7 @@ signal mem_load_unsigned_IDEX : std_logic;
 signal wb_src_IDEX : std_logic;
 signal wb_we_IDEX  : std_logic;
 signal is_branch_IDEX : std_logic;
+signal branch_target_IDEX : std_logic_vector(PC_WIDTH - 1 downto 0);
 
 --Execute
 signal ALU_result_EX : std_logic_vector(31 downto 0);
@@ -73,9 +75,11 @@ signal is_branch_EXMEM : std_logic;
 signal wb_we_EXMEM : std_logic;
 signal wb_src_EXMEM : std_logic;
 signal mem_load_unsigned_EXMEM : std_logic;
+signal funct3_EXMEM : std_logic_vector(2 downto 0);
+signal branch_target_EXMEM : std_logic_vector(PC_WIDTH - 1 downto 0);
 --Memory
 signal mem_read_MEM : std_logic_vector(31 downto 0);
-
+signal branch_MEM : std_logic;
 --MEMWB pipeline register
 signal ALU_result_MEMWB : std_logic_vector(31 downto 0);
 signal flush_MEMWB : std_logic;
@@ -101,8 +105,9 @@ mem_rs2_src_EX <= '0';
 instruction_fetch : entity work.instruction_fetch port map(
 	clk => clk,
 	nreset => nreset,
-	branch_or_jump => branch_or_jump,
-	boj_target => boj_target,
+	branch => branch_MEM,
+	branch_target_in => branch_target_EXMEM,
+	branch_target_out => branch_target_IF,
 	stall => stall_IF,
 	instruction_o => instruction_IF
 	);
@@ -111,7 +116,9 @@ IFID_pipline_register : entity work.IFID_preg port map(
 	clk => clk,
 	flush => flush_IFID,
 	instruction_i => instruction_IF,
-	instruction_o => instruction_IFID	
+	instruction_o => instruction_IFID,
+	branch_target_in => branch_target_IF,
+	branch_target_out => branch_target_IFID	
 	);
 	
 instruction_decode : entity work.instruction_decode port map(
@@ -166,7 +173,9 @@ IDEX_pipeline_register : entity work.IDEX_preg port map(
 	is_branch_in => is_branch_ID,
 	is_branch_out => is_branch_IDEX,
 	mem_load_unsigned_in => mem_load_unsigned_ID,
-	mem_load_unsigned_out => mem_load_unsigned_IDEX
+	mem_load_unsigned_out => mem_load_unsigned_IDEX,
+	branch_target_in => branch_target_IFID,
+	branch_target_out => branch_target_IDEX
 	);
 
 Execute : entity work.execute port map(
@@ -180,10 +189,10 @@ Execute : entity work.execute port map(
 	rd => rd_IDEX,
 	rd_dest_mem => rd_EXMEM,
 	rd_data_mem => ALU_result_EXMEM,
-	rd_we_mem => reg_we_EXMEM,
-	rd_dest_wb => rd_WB,
-	rd_data_wb => ALU_result_WB,
-	rd_we_wb => reg_we_WB,
+	rd_we_mem => wb_we_EXMEM,
+	rd_dest_wb => rd_MEMWB,
+	rd_data_wb => wb_data_WB,
+	rd_we_wb => wb_we_MEMWB,
 	ALU_result => ALU_result_EX
 	);
 
@@ -207,9 +216,11 @@ EXMEM_pipeline_register : entity work.EXMEM_preg port map(
 	wb_src_in => wb_src_IDEX,
 	wb_src_out => wb_src_EXMEM,
 	mem_load_unsigned_in => mem_load_unsigned_IDEX,
-	mem_load_unsigned_out => mem_load_unsigned_EXMEM
+	mem_load_unsigned_out => mem_load_unsigned_EXMEM,
+	branch_target_in => branch_target_IDEX,
+	branch_target_out => branch_target_EXMEM
 	);
-	
+funct3_EXMEM <= mem_load_unsigned_EXMEM & mem_be_EXMEM;	
 memory : entity work.memory port map(
 	clk => clk,
 	ALU_result => ALU_result_EXMEM,
@@ -218,7 +229,10 @@ memory : entity work.memory port map(
 	rs2_src => mem_rs2_src_EX,
 	mem_write_width => mem_be_EXMEM,
 	mem_we => mem_we_EXMEM,
-	mem_read_out => mem_read_MEM
+	mem_read_out => mem_read_MEM,
+	funct3 => funct3_EXMEM,
+	branch => branch_MEM,
+	is_branch => is_branch_EXMEM	
 	);
 
 MEMWB_pipeline_registers : entity work.MEMWB_preg port map(
