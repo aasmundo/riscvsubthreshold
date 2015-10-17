@@ -38,7 +38,9 @@ entity IDEX_preg is
 		wb_src_out : out std_logic;
 		wb_we_out  : out std_logic;
 		is_branch_in : in std_logic;
-		is_branch_out : out std_logic
+		is_branch_out : out std_logic;
+		branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
+		branch_target_out : out std_logic_vector(PC_WIDTH - 1 downto 0)
 
 	);
 end IDEX_preg;
@@ -72,6 +74,7 @@ begin
 		ALU_operation_out <= ALU_operation_in;
 		wb_src_out <= wb_src_in;
 		mem_load_unsigned_out <= mem_load_unsigned_in;
+		branch_target_out <= branch_target_in;
 	end if;
 	
 	

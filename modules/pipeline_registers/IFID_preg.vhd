@@ -9,7 +9,8 @@ entity IFID_preg is
 	flush : in std_logic;
 	
 	instruction_i : in std_logic_vector(31 downto 0);
-	
+	branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
+	branch_target_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	
 	instruction_o : out std_logic_vector(31 downto 0)
 	);
@@ -26,6 +27,7 @@ begin
 		else
 			 instruction_o <= instruction_i;
 		end if;
+		branch_target_out <= branch_target_in;
 	end if;
 end process;
 

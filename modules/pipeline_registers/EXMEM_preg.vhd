@@ -12,6 +12,9 @@ entity EXMEM_preg is
 	rs2_data_in : in std_logic_vector(31 downto 0);
 	rs2_data_out : out std_logic_vector(31 downto 0);
 	
+	branch_target_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
+	branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
+	
 	
 	
 	-- MEM control --
@@ -47,9 +50,11 @@ begin
 		if(flush = '1') then
 			rd_we_out <= '0';
 			mem_we_out <= '0';
+			is_branch_out <= '0';
 		else
 			rd_we_out <= rd_we_in;
 			mem_we_out <= mem_we_in;
+			is_branch_out <= is_branch_in;
 		end if;					  
 		ALU_result_out <= ALU_result_in;
 		rd_out <= rd_in;
@@ -57,6 +62,8 @@ begin
 		wb_src_out <= wb_src_in;
 		mem_write_width_out <= mem_write_width_in;
 		mem_load_unsigned_out <= mem_load_unsigned_in;
+		branch_target_out <= branch_target_in;
+		
 	end if;
 end process;
 end behave;
