@@ -9,36 +9,47 @@ entity instruction_fetch is
 	nreset : in std_logic;
 	
 	--from other stages
-	branch_or_jump : in std_logic;
-	boj_target : in std_logic_vector(31 downto 0);
+	branch : in std_logic;
+	branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
 	stall : in std_logic;
 	
 	--to IFID preg
-	instruction_o : out std_logic_vector(31 downto 0)
+	instruction_o : out std_logic_vector(31 downto 0);
+	branch_target_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
+	
+	--Branch prediction
+	PC_incr_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
+	branch_taken : out std_logic
+	--**--
+	
 	);
 end instruction_fetch;
 
 architecture behave of instruction_fetch is
 signal PC_we : std_logic;
-signal PC_in, PC_out : std_logic_vector(31 downto 0);
-signal PC_incr : std_logic_vector(31 downto 0);
+signal PC_in, PC_out : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal PC_incr : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal instruction : std_logic_vector(31 downto 0);
+signal SB_type_imm : std_logic_vector(11 downto 0);
 begin
 
+branch_taken <= '0';
+PC_incr_out <= PC_incr;
 	
-combi : process(PC_incr, boj_target, branch_or_jump, PC_in)
+combi : process(PC_incr, branch_target_in, branch, PC_in)
 
 begin
-	case(branch_or_jump) is
+	case(branch) is
 		when '0'    => PC_in <= PC_incr;
-		when '1'    => PC_in <= boj_target;
-		when others => PC_in <= UNKNOWN_32BIT;
+		when '1'    => PC_in <= branch_target_in;
+		when others => PC_in <= (others => 'X');
 	end case;
 end process;
 	
 	
 PC_we <= not stall;
 instruction_o <= instruction;
+SB_type_imm <= instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8);
 
 PC : entity work.PC port map(
 	clk => clk,
@@ -51,6 +62,12 @@ PC : entity work.PC port map(
 PC_incrementer : entity work.PC_increment port map(
 	input => PC_out,
 	output => PC_incr
+	);
+	
+branch_target_adder : entity work.branch_target_adder port map(
+	PC_i => PC_out,
+	PC_o => branch_target_out,
+	imm => SB_type_imm
 	);
 	
 instruction_memory : entity work.SP_32bit generic map(
