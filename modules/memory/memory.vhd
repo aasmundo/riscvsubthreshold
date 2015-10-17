@@ -14,6 +14,10 @@ entity memory is
 	mem_write_width : in std_logic_vector(1 downto 0);
 	mem_we : in std_logic;
 	
+	is_branch : in std_logic;
+	funct3 : in std_logic_vector(2 downto 0);
+	branch : out std_logic;
+	
 	mem_read_out : out std_logic_vector(31 downto 0)
 
 	);
@@ -38,6 +42,13 @@ we => mem_we,
 write_data => rs2_data,
 read_data => mem_read_out
 );
+
+branch_control : entity branch_control port map(
+	ALU_result => ALU_result,
+	is_branch => is_branch,
+	funct3 => funct3,
+	branch => branch	
+	);
 
 
 
