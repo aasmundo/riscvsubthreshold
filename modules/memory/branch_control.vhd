@@ -17,7 +17,7 @@ architecture behave of branch_control is
 signal ALU_res_zero : std_logic;
 begin
 	
-combi: process(ALU_result, funct3, is_branch)
+combi: process(ALU_result, funct3, is_branch, ALU_res_zero)
 begin 
 	case ALU_result is
 		when x"00000000" => ALU_res_zero <= '1';
@@ -27,8 +27,8 @@ begin
 	case funct3 is
 		when BEQ => branch <= ALU_res_zero and is_branch;
 		when BNE => branch <= not ALU_res_zero and is_branch;
-		when BLT | BLTU => branch <= ALU_res_zero and is_branch;
-		when BGE | BGEU => branch <= not ALU_res_zero and is_branch;
+		when BLT | BLTU => branch <= not ALU_res_zero and is_branch;
+		when BGE | BGEU => branch <= ALU_res_zero and is_branch;
 		when others => branch <= '0';
 	end case;
 	
