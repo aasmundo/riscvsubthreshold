@@ -105,7 +105,18 @@ begin
 			ALU_operation <= ALU_OR_OPCODE;
 		when "01110010011" | "01110110011" | "11110010011" | "11110110011" => --AND & ANDI
 			ALU_operation <= ALU_AND_OPCODE;
-		
+		when "00001100011" | "10001100011" => --BEQ
+			ALU_operation <= ALU_SUB_OPCODE;
+		when "00011100011" | "10011100011" => --BNE
+			ALU_operation <= ALU_SUB_OPCODE;
+		when "01001100011" | "11001100011" => --BLT
+			ALU_operation <= ALU_SLT_OPCODE;
+		when "01011100011" | "11011100011" => --BGE
+			ALU_operation <= ALU_SLT_OPCODE;
+		when "01101100011" | "11101100011" => --BLTU
+			ALU_operation <= ALU_SLTU_OPCODE;
+		when "01111100011" | "11111100011" => --BGEU
+			ALU_operation <= ALU_SLTU_OPCODE;
 		when others => 
 			ALU_operation <= ALU_ADD_OPCODE;
 	end case;
