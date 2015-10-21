@@ -20,7 +20,12 @@ entity instruction_decode is
 	is_imm : out std_logic;
 	rs1 : out std_logic_vector(4 downto 0);
 	rs2 : out std_logic_vector(4 downto 0);
-	rd : out std_logic_vector(4 downto 0);
+	rd : out std_logic_vector(4 downto 0); 
+	
+	--hazard
+	ex_rd : in std_logic_vector(4 downto 0);
+	ex_wb_src : in std_logic;
+	stall : out std_logic;
 	
 	--control
 	mem_we : out std_logic;
@@ -29,7 +34,8 @@ entity instruction_decode is
 	wb_we  : out std_logic;
 	ALU_operation : out std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
 	is_branch : out std_logic;
-	mem_load_unsigned : out std_logic
+	mem_load_unsigned : out std_logic;
+	reg_or_PC : out std_logic
 	
 	);
 end instruction_decode;
@@ -38,6 +44,7 @@ end instruction_decode;
 architecture behave of instruction_decode is
 signal opcode   : std_logic_vector(6 downto 0);
 signal alu_decode_helper : std_logic_vector(10 downto 0);
+signal is_immediate : std_logic;
 begin
 
 opcode <= instr(6 downto 0);
@@ -45,13 +52,13 @@ opcode <= instr(6 downto 0);
 rd <= instr(11 downto 7); 
 rs1 <= instr(19 downto 15);
 rs2 <= instr(24 downto 20);
-
+is_imm <= is_immediate;
 
 immediate_extender : entity work.imm_ext port map
 	(
 		instr  => instr,
 		imm    => imm,
-		is_imm => is_imm	
+		is_imm => is_immediate	
 	);
 	
 register_file : entity work.register_file port map
@@ -76,7 +83,19 @@ control : entity work.control port map
 		mem_we => mem_we,
 		mem_write_width => mem_be,
 		is_branch => is_branch,
-		mem_load_unsigned => mem_load_unsigned
+		mem_load_unsigned => mem_load_unsigned,
+		reg_or_PC => reg_or_PC
+	);
+	
+hazard_detector : entity work.hazard_detector port map
+	(
+		is_imm => is_immediate,
+		rs1 => instr(19 downto 15),
+		rs2 => instr(24 downto 20),
+		ex_rd => ex_rd,
+		ex_wb_src => ex_wb_src,
+		stall => stall
+		
 	);
 	
 alu_decode_helper <= instr(30) & instr(14 downto 12) & instr(6 downto 0);	
@@ -117,6 +136,16 @@ begin
 			ALU_operation <= ALU_SLTU_OPCODE;
 		when "01111100011" | "11111100011" => --BGEU
 			ALU_operation <= ALU_SLTU_OPCODE;
+		when "00000110111" | "00010110111" | "00100110111" | "00110110111" |
+			 "01000110111" | "01010110111" | "01100110111" | "01110110111" |
+			 "10000110111" | "10010110111" | "10100110111" | "10110110111" |
+			 "11000110111" | "11010110111" | "11100110111" | "11110110111" => --LUI
+			ALU_operation <= ALU_B_PASS_OPCODE;
+		when "00000010111" | "00010010111" | "00100010111" | "00110010111" |
+			 "01000010111" | "01010010111" | "01100010111" | "01110010111" |
+			 "10000010111" | "10010010111" | "10100010111" | "10110010111" |
+			 "11000010111" | "11010010111" | "11100010111" | "11110010111" => --AUIPC
+			ALU_operation <= ALU_ADD_OPCODE;
 		when others => 
 			ALU_operation <= ALU_ADD_OPCODE;
 	end case;
