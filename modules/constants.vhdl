@@ -16,6 +16,7 @@ package constants is
 	constant ALU_AND_OPCODE     : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0) := "0111";
 	constant ALU_OR_OPCODE      : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0) := "0110";
 	constant ALU_XOR_OPCODE     : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0) := "0100";
+	constant ALU_B_PASS_OPCODE  : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0) := "1001";
 	
 	--Other constants--
 	
@@ -38,6 +39,8 @@ package constants is
 	
 	constant ID  : std_logic_vector(1 downto 0) := "00";
 	constant MEM : std_logic_vector(1 downto 0) := "1-"; --vhdl2008
+	constant MEM_1 : std_logic_vector(1 downto 0) := "10";
+	constant MEM_2 : std_logic_vector(1 downto 0) := "11";
 	constant WB  : std_logic_vector(1 downto 0) := "01";
 	
 	--branch codes--
