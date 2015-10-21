@@ -7,12 +7,13 @@ entity control is
 	funct3 : in std_logic_vector(2 downto 0);
 	
 	--control signals:
-	signal wb_src : out std_logic;
-	signal wb_we : out std_logic;
-	signal mem_we : out std_logic;
-	signal mem_write_width : out std_logic_vector(1 downto 0);
-	signal mem_load_unsigned : out std_logic;
-	signal is_branch : out std_logic
+	wb_src : out std_logic;
+	wb_we : out std_logic;
+	mem_we : out std_logic;
+	mem_write_width : out std_logic_vector(1 downto 0);
+	mem_load_unsigned : out std_logic;
+	is_branch : out std_logic;	  
+	reg_or_PC : out std_logic
 	);
 end control;
 
@@ -30,15 +31,19 @@ begin
 	mem_write_width <= funct3(1 downto 0);
 	mem_load_unsigned <= funct3(2);
 	is_branch <= '0';
+	reg_or_PC <= '0';
 	
 	case opcode is
-		when "0100011" => mem_we <= '1';
+		when "0100011" => 			  mem_we    <= '1';
 		when "0000011" => 
-			wb_src <= '1';
-			wb_we <= '1';
-		--when "0-10011" => wb_we <= '1'; --vhdl2008
-		when "0110011" | "0010011" => wb_we <= '1'; --older vhdl	
-		when "1100011" => is_branch <= '1';
+						  			  wb_src    <= '1';
+						  			  wb_we     <= '1';
+		when "0110011" | "0010011" => wb_we     <= '1'; --older vhdl
+		when "0110111" => 			  wb_we     <= '1'; --LUI
+		when "1100011" =>			  is_branch <= '1';
+		when "0010111" =>			  
+									  wb_we     <= '1';
+									  reg_or_PC <= '1';
 		when others    => NULL;
 	end case;
 	
