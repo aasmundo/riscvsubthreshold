@@ -12,7 +12,10 @@ entity IFID_preg is
 	branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
 	branch_target_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	
-	instruction_o : out std_logic_vector(31 downto 0)
+	instruction_o : out std_logic_vector(31 downto 0);
+	
+	current_PC_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
+	current_PC_out : out std_logic_vector(PC_WIDTH - 1 downto 0)
 	);
 end IFID_preg;
 
@@ -28,6 +31,7 @@ begin
 			 instruction_o <= instruction_i;
 		end if;
 		branch_target_out <= branch_target_in;
+		current_PC_out    <= current_PC_in;
 	end if;
 end process;
 

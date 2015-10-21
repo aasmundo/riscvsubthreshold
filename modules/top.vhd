@@ -6,12 +6,17 @@ use work.constants.all;
 entity top is
 	port(
 	clk    : in std_logic;
-	nreset : in std_logic
+	nreset : in std_logic;
+	imem_we : in std_logic;
+	imem_data : in std_logic_vector(31 downto 0);
+	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0)
 	);
 end top;
 
 
 architecture behave of top is
+signal stall : std_logic;
+
 
 --Instruction fetch
 signal branch_IF : std_logic;
@@ -19,11 +24,13 @@ signal branch_target_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal stall_IF : std_logic;
 signal instruction_IF : std_logic_vector(31 downto 0);
 signal PC_incr_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal current_PC_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
 
 --IFID pipline register
 signal instruction_IFID : std_logic_vector(31 downto 0);
 signal flush_IFID : std_logic;
 signal branch_target_IFID : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal current_PC_IFID : std_logic_vector(PC_WIDTH - 1 downto 0);
 
 --Instruction decode
 signal reg1_ID : std_logic_vector(31 downto 0);
@@ -39,7 +46,9 @@ signal wb_src_ID : std_logic;
 signal wb_we_ID  : std_logic;
 signal is_branch_ID : std_logic;
 signal mem_load_unsigned_ID : std_logic;
-signal ALU_operation_ID : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0); 
+signal ALU_operation_ID : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
+signal reg_or_PC_ID : std_logic;
+
 
 --IDEX pipeline register
 signal flush_IDEX : std_logic;
@@ -58,6 +67,8 @@ signal wb_src_IDEX : std_logic;
 signal wb_we_IDEX  : std_logic;
 signal is_branch_IDEX : std_logic;
 signal branch_target_IDEX : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal current_PC_IDEX : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal reg_or_PC_IDEX : std_logic;
 
 --Execute
 signal ALU_result_EX : std_logic_vector(31 downto 0);
@@ -101,7 +112,14 @@ flush_IDEX <= '0';
 flush_EXMEM <= '0';
 flush_MEMWB <= '0';	
 mem_rs2_src_EX <= '0';
-	
+
+
+stall_IF <= stall;
+flush_IFID <= branch_MEM or stall or not nreset;
+flush_IDEX <= branch_MEM or stall or not nreset;
+flush_EXMEM <= branch_MEM or not nreset;
+flush_MEMWB <= not nreset;
+
 instruction_fetch : entity work.instruction_fetch port map(
 	clk => clk,
 	nreset => nreset,
@@ -109,7 +127,11 @@ instruction_fetch : entity work.instruction_fetch port map(
 	branch_target_in => branch_target_EXMEM,
 	branch_target_out => branch_target_IF,
 	stall => stall_IF,
-	instruction_o => instruction_IF
+	instruction_o => instruction_IF,
+	imem_data => imem_data,
+	imem_we => imem_we,
+	imem_write_address => imem_write_address,
+	current_PC => current_PC_IF
 	);
 	
 IFID_pipline_register : entity work.IFID_preg port map(
@@ -118,7 +140,9 @@ IFID_pipline_register : entity work.IFID_preg port map(
 	instruction_i => instruction_IF,
 	instruction_o => instruction_IFID,
 	branch_target_in => branch_target_IF,
-	branch_target_out => branch_target_IFID	
+	branch_target_out => branch_target_IFID,
+	current_PC_in => current_PC_IF,
+	current_PC_out => current_PC_IFID
 	);
 	
 instruction_decode : entity work.instruction_decode port map(
@@ -140,7 +164,11 @@ instruction_decode : entity work.instruction_decode port map(
 	wb_we => wb_we_ID,
 	ALU_operation => ALU_operation_ID,
 	is_branch => is_branch_ID,
-	mem_load_unsigned => mem_load_unsigned_ID
+	mem_load_unsigned => mem_load_unsigned_ID,
+	ex_rd => rd_IDEX,
+	ex_wb_src => wb_src_IDEX,
+	stall => stall,
+	reg_or_PC => reg_or_PC_ID
 	);
 	
 IDEX_pipeline_register : entity work.IDEX_preg port map(
@@ -175,7 +203,11 @@ IDEX_pipeline_register : entity work.IDEX_preg port map(
 	mem_load_unsigned_in => mem_load_unsigned_ID,
 	mem_load_unsigned_out => mem_load_unsigned_IDEX,
 	branch_target_in => branch_target_IFID,
-	branch_target_out => branch_target_IDEX
+	branch_target_out => branch_target_IDEX,
+	current_PC_in => current_PC_IFID,
+	current_PC_out => current_PC_IDEX,
+	reg_or_PC_in => reg_or_PC_ID,
+	reg_or_PC_out => reg_or_PC_IDEX
 	);
 
 Execute : entity work.execute port map(
@@ -193,7 +225,9 @@ Execute : entity work.execute port map(
 	rd_dest_wb => rd_MEMWB,
 	rd_data_wb => wb_data_WB,
 	rd_we_wb => wb_we_MEMWB,
-	ALU_result => ALU_result_EX
+	ALU_result => ALU_result_EX,
+	current_PC => current_PC_IDEX,
+	reg_or_PC => reg_or_PC_IDEX
 	);
 
 EXMEM_pipeline_register : entity work.EXMEM_preg port map(
