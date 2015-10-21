@@ -8,6 +8,10 @@ entity instruction_fetch is
 	clk : in std_logic;	
 	nreset : in std_logic;
 	
+	imem_we	: in std_logic;
+	imem_data : in std_logic_vector(31 downto 0);
+	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+	
 	--from other stages
 	branch : in std_logic;
 	branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
@@ -16,6 +20,7 @@ entity instruction_fetch is
 	--to IFID preg
 	instruction_o : out std_logic_vector(31 downto 0);
 	branch_target_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
+	current_PC : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	
 	--Branch prediction
 	PC_incr_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
@@ -31,18 +36,26 @@ signal PC_in, PC_out : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal PC_incr : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal instruction : std_logic_vector(31 downto 0);
 signal SB_type_imm : std_logic_vector(11 downto 0);
+signal imem_address : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 begin
 
 branch_taken <= '0';
 PC_incr_out <= PC_incr;
+current_PC <= PC_out;
 	
-combi : process(PC_incr, branch_target_in, branch, PC_in)
+combi : process(PC_incr, branch_target_in, branch, PC_in, imem_we, PC_out, imem_write_address)
 
 begin
 	case(branch) is
 		when '0'    => PC_in <= PC_incr;
 		when '1'    => PC_in <= branch_target_in;
 		when others => PC_in <= (others => 'X');
+	end case;
+	
+	case (imem_we) is
+		when '0' => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+		when '1' => imem_address <= imem_write_address;
+		when others => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0); 
 	end case;
 end process;
 	
@@ -74,10 +87,10 @@ instruction_memory : entity work.SP_32bit generic map(
 address_width => INSTRUCTION_MEM_WIDTH) 
 port map (
 clk => clk,
-address => PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0),
-data_in => x"00000000",
+address => imem_address,
+data_in => imem_data,
 data_out => instruction,
-we => '0'
+we => imem_we
 );
 
 	
