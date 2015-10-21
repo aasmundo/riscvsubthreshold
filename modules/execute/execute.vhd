@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use ieee.numeric_std.all;
 library work;
 use work.constants.all;
 
@@ -15,6 +16,8 @@ entity execute is
 		rs1 : in std_logic_vector(4 downto 0);
 		rs2 : in std_logic_vector(4 downto 0);
 		rd : in std_logic_vector(4 downto 0);
+		current_PC : in std_logic_vector(PC_WIDTH - 1 downto 0);
+		reg_or_PC : in std_logic;
 		
 	--from memory
 		rd_dest_mem : in std_logic_vector(4 downto 0);
@@ -34,23 +37,31 @@ entity execute is
 end execute;
 
 architecture behave of execute is
-signal ALU_a_in, ALU_b_in, b_reg : std_logic_vector(31 downto 0);
+signal ALU_a_in, ALU_b_in, b_reg, a_reg, PC_ext : std_logic_vector(31 downto 0);
 
 signal reg_a_src , reg_b_src : std_logic_vector(1 downto 0);
 begin
 
-alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg, reg_a_src, reg_b_src)
+PC_ext <= std_logic_vector(resize(unsigned(current_PC), PC_ext'length));
+	
+alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg, reg_a_src, reg_b_src, PC_ext, reg_or_PC)
 begin
-	reg_a_input_src_mux : case(reg_a_src) is 
-		when ID     => ALU_a_in <= reg1;
-		when MEM    => ALU_a_in <= rd_data_mem;
-		when WB     => ALU_a_in <= rd_data_wb;
+	reg_a_input_src_mux : case(reg_or_PC) is 
+		when '0'     => ALU_a_in <= a_reg;
+		when '1'     => ALU_a_in <= PC_ext;
 		when others => ALU_a_in <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+	end case;
+	
+	a_reg_src_mux : case(reg_a_src) is 
+		when ID     => a_reg <= reg1;
+		when MEM_1 | MEM_2 => a_reg <= rd_data_mem;
+		when WB     => a_reg <= rd_data_wb;
+		when others => a_reg <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 	end case;
 	
 	reg_b_input_src_mux : case(reg_b_src) is
 		when ID     => b_reg <= reg2;
-		when MEM    => b_reg <= rd_data_mem;
+		when MEM_1 | MEM_2 => b_reg <= rd_data_mem;
 		when WB     => b_reg <= rd_data_wb;
 		when others => b_reg <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 	end case;

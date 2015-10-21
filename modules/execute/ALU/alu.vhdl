@@ -16,8 +16,9 @@ port (
 end ALU;
 
 architecture ALU_arch of ALU is
-signal add_res, sub_res, and_res, or_res, xor_res, add_sub_res, 
-       sll_res, sra_res, srl_res, srl_sra_res, slt_res, sltu_res : signed(31 downto 0);
+signal add_res, sub_res, and_res, or_res, xor_res,  
+	   sll_res, sra_res, srl_res, slt_res, sltu_res,
+	   b_pass_through_res : signed(31 downto 0);
 begin
 
 
@@ -41,12 +42,12 @@ begin
     srl_res <= signed(std_logic_vector(shift_right(unsigned(A), to_integer(unsigned(B(4 downto 0))))));
     sra_res <= shift_right(signed(A), to_integer(unsigned(B(4 downto 0))));
     
+	b_pass_through_res <= signed(B);
 end process;
 
-mux: process(add_sub_res, srl_sra_res, sltu_res, sll_res, slt_res, and_res, or_res, xor_res, operation)
+mux: process(add_res, sub_res, srl_res, sra_res, sltu_res, sll_res, slt_res, and_res, or_res, xor_res, operation, b_pass_through_res)
 begin
 
-    
     case operation is
         when ALU_ADD_OPCODE     => result <= std_logic_vector(add_res);
         when ALU_SUB_OPCODE     => result <= std_logic_vector(sub_res);
@@ -58,6 +59,7 @@ begin
         when ALU_AND_OPCODE     => result <= std_logic_vector(and_res);
         when ALU_OR_OPCODE      => result <= std_logic_vector(or_res);
         when ALU_XOR_OPCODE     => result <= std_logic_vector(xor_res);
+		when ALU_B_PASS_OPCODE  => result <= std_logic_vector(b_pass_through_res);
         when others             => result <= x"00000000";
     end case;
 end process;
