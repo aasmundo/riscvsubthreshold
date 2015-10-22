@@ -31,11 +31,11 @@ entity IDEX_preg is
 		mem_be_in : in std_logic_vector(1 downto 0); 
 		mem_load_unsigned_in : in std_logic;  
 		mem_load_unsigned_out : out std_logic;
-		wb_src_in : in std_logic;
+		wb_src_in : in std_logic_vector(1 downto 0);
 		wb_we_in  : in std_logic;
 		mem_we_out : out std_logic;
 		mem_be_out : out std_logic_vector(1 downto 0);
-		wb_src_out : out std_logic;
+		wb_src_out : out std_logic_vector(1 downto 0);
 		wb_we_out  : out std_logic;
 		is_branch_in : in std_logic;
 		is_branch_out : out std_logic;
@@ -44,7 +44,11 @@ entity IDEX_preg is
 		current_PC_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
 		current_PC_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
 		reg_or_PC_in : in std_logic;
-		reg_or_PC_out : out std_logic
+		reg_or_PC_out : out std_logic;
+		is_jump_in : in std_logic;
+		is_jump_out : out std_logic;
+		PC_incr_in :  in std_logic_vector(PC_WIDTH - 1 downto 0);
+		PC_incr_out :  out std_logic_vector(PC_WIDTH - 1 downto 0)
 
 	);
 end IDEX_preg;
@@ -61,11 +65,13 @@ begin
 			mem_we_out <= '0';
 			wb_we_out  <= '0';
 			is_branch_out  <= '0';
+			is_jump_out <= '0';
 		else
 			rd_out <= rd_in;
 			mem_we_out <= mem_we_in;
 			wb_we_out  <= wb_we_in;
 			is_branch_out <= is_branch_in;
+			is_jump_out <= is_jump_in;
 		end if;
 		ALU_operation_out <= ALU_operation_in;
 		mem_be_out <= mem_be_in;
@@ -81,6 +87,8 @@ begin
 		branch_target_out <= branch_target_in;
 		current_PC_out <= current_PC_in;
 		reg_or_PC_out <= reg_or_PC_in;
+		PC_incr_out <= PC_incr_in;
+		
 	end if;
 	
 	

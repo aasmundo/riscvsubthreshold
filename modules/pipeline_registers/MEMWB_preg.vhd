@@ -14,8 +14,8 @@ entity MEMWB_preg is
 	ALU_data_in : in std_logic_vector(31 downto 0);
 	ALU_data_out : out std_logic_vector(31 downto 0);
 	
-	wb_src_in : in std_logic;
-	wb_src_out : out std_logic;
+	wb_src_in : in std_logic_vector(1 downto 0);
+	wb_src_out : out std_logic_vector(1 downto 0);
 	wb_we_in : in std_logic;
 	wb_we_out : out std_logic;
 	rd_in : in std_logic_vector(4 downto 0);
@@ -23,8 +23,9 @@ entity MEMWB_preg is
 	mem_load_width_in : in std_logic_vector(1 downto 0);
 	mem_load_width_out : out std_logic_vector(1 downto 0);
 	mem_load_unsigned_in : in std_logic;  
-	mem_load_unsigned_out : out std_logic
-	
+	mem_load_unsigned_out : out std_logic;
+	PC_incr_in :  in std_logic_vector(PC_WIDTH - 1 downto 0);
+	PC_incr_out :  out std_logic_vector(PC_WIDTH - 1 downto 0)
 	
 	);
 end MEMWB_preg;	
@@ -47,6 +48,7 @@ begin
 		ALU_data_out <= ALU_data_in;
 		mem_load_unsigned_out <= mem_load_unsigned_in;
 		mem_load_width_out <= mem_load_width_in;
+		PC_incr_out <= PC_incr_in;
 	end if;
 end process;
 	

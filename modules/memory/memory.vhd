@@ -16,7 +16,10 @@ entity memory is
 	
 	is_branch : in std_logic;
 	funct3 : in std_logic_vector(2 downto 0);
-	branch : out std_logic;
+	is_jump : in std_logic;
+	new_PC : out std_logic_vector(PC_WIDTH - 1 downto 0);
+	branch_target : in std_logic_vector(PC_WIDTH - 1 downto 0);
+	control_transfer : out std_logic;
 	
 	mem_read_out : out std_logic_vector(31 downto 0)
 
@@ -25,6 +28,7 @@ end memory;
 	
 architecture behave of memory is
 signal rs2_data : std_logic_vector(31 downto 0);
+signal branch : std_logic;
 begin
 rs2_src_process : process(rs2_src, rs2_data_ex, rs2_data_wb) 
 begin
@@ -48,7 +52,17 @@ branch_control : entity branch_control port map(
 	is_branch => is_branch,
 	funct3 => funct3,
 	branch => branch	
-	);
+);
+
+process(is_jump, ALU_result, branch_target, branch, is_jump)
+
+begin
+	case (is_jump) is
+		when '1' => new_PC <= ALU_result(PC_WIDTH - 1 downto 0);
+		when others => new_PC <= branch_target;
+	end case;
+	control_transfer <= branch or is_jump;
+end process;
 
 
 

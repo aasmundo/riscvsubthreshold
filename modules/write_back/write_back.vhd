@@ -6,12 +6,13 @@ use work.constants.all;
 
 entity write_back is
 	port(
-	wb_src : in std_logic;
+	wb_src : in std_logic_vector(1 downto 0);
 	mem_data : in std_logic_vector(31 downto 0);
 	ALU_data : in std_logic_vector(31 downto 0);
 	wb_data : out std_logic_vector(31 downto 0);
 	mem_load_width : in std_logic_vector(1 downto 0);
-	mem_load_unsigned : in std_logic
+	mem_load_unsigned : in std_logic;
+	PC_incr : in std_logic_vector(PC_WIDTH -1 downto 0)
 	);
 end write_back;	  
 
@@ -21,7 +22,7 @@ signal sign_ext_helper : std_logic_vector(2 downto 0);
 begin
 
 
-combi : process(wb_src, mem_data, ALU_data, mem_data_ext, mem_load_unsigned, mem_load_width, sign_ext_helper) 
+combi : process(wb_src, mem_data, ALU_data, mem_data_ext, mem_load_unsigned, mem_load_width, sign_ext_helper, PC_incr) 
 begin
 	sign_ext_helper <= mem_load_unsigned & mem_load_width;
 	case (sign_ext_helper) is
@@ -32,10 +33,14 @@ begin
 		when "010" => mem_data_ext <= mem_data;
 		when others => mem_data_ext <= mem_data;
 	end case;
-		
-	if(wb_src = '0') then wb_data <= ALU_data;
-	else 				  wb_data <= mem_data_ext; 
-	end if;
+	
+	case (wb_src) is
+		when "00" => wb_data <= ALU_data;
+		when "01" => wb_data <= mem_data_ext;
+		when "10" => wb_data <= std_logic_vector(resize(unsigned(PC_incr), wb_data'length));
+		when others => wb_data <= ALU_data;
+	end case;
+	
 end process;
 	
 end behave;
