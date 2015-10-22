@@ -24,18 +24,19 @@ entity instruction_decode is
 	
 	--hazard
 	ex_rd : in std_logic_vector(4 downto 0);
-	ex_wb_src : in std_logic;
+	ex_wb_src : in std_logic_vector(1 downto 0);
 	stall : out std_logic;
 	
 	--control
 	mem_we : out std_logic;
 	mem_be : out std_logic_vector(1 downto 0);
-	wb_src : out std_logic;
+	wb_src : out std_logic_vector(1 downto 0);
 	wb_we  : out std_logic;
 	ALU_operation : out std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
 	is_branch : out std_logic;
 	mem_load_unsigned : out std_logic;
-	reg_or_PC : out std_logic
+	reg_or_PC : out std_logic;
+	is_jump : out std_logic
 	
 	);
 end instruction_decode;
@@ -83,6 +84,7 @@ control : entity work.control port map
 		mem_we => mem_we,
 		mem_write_width => mem_be,
 		is_branch => is_branch,
+		is_jump => is_jump,
 		mem_load_unsigned => mem_load_unsigned,
 		reg_or_PC => reg_or_PC
 	);
@@ -141,6 +143,11 @@ begin
 			 "10000110111" | "10010110111" | "10100110111" | "10110110111" |
 			 "11000110111" | "11010110111" | "11100110111" | "11110110111" => --LUI
 			ALU_operation <= ALU_B_PASS_OPCODE;
+		when "00001101111" | "00011101111" | "00101101111" | "00111101111" |
+			 "01001101111" | "01011101111" | "01101101111" | "01111101111" |
+			 "10001101111" | "10011101111" | "10101101111" | "10111101111" |
+			 "11001101111" | "11011101111" | "11101101111" | "11111101111" => --JAL
+			ALU_operation <= ALU_B_PASS_OPCODE; 
 		when "00000010111" | "00010010111" | "00100010111" | "00110010111" |
 			 "01000010111" | "01010010111" | "01100010111" | "01110010111" |
 			 "10000010111" | "10010010111" | "10100010111" | "10110010111" |

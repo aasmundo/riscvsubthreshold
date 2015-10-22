@@ -18,11 +18,14 @@ type mem_t is array(0 to ((2**address_width) - 1)) of std_logic_vector(31 downto
 signal mem : mem_t;
 begin
 
+combi : process(address, mem)
+begin
+	data_out <= mem(to_integer(unsigned(address)));
+end process;
 
 seq : process(clk, we, data_in, address)
 begin
 	if(clk = '1' and clk'event) then
-		data_out <= mem(to_integer(unsigned(address)));
 		if(we = '1') then
 			mem(to_integer(unsigned(address))) <= data_in;
 		end if;
