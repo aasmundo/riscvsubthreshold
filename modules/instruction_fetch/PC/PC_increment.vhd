@@ -18,7 +18,7 @@ process(input)
 begin
 
 
-output <= std_logic_vector(unsigned(input) + 1 );
+output <= std_logic_vector(unsigned(input) + 4 );
 
 
 end process;

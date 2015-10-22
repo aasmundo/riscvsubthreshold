@@ -7,13 +7,13 @@ use work.constants.all;
 entity branch_target_adder is
 port(
 		PC_i  : in  std_logic_vector(PC_WIDTH - 1 downto 0);
-		imm   : in  std_logic_vector(11 downto 0);
+		imm   : in  std_logic_vector(19 downto 0);
 		PC_o  : out std_logic_vector(PC_WIDTH - 1 downto 0)
 	);
 end branch_target_adder;
 
 architecture behave of branch_target_adder is
-signal signed_imm : signed(12 downto 0);
+signal signed_imm : signed(20 downto 0);
 signal signed_PC : signed(PC_WIDTH downto 0);
 begin
 

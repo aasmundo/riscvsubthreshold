@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use ieee.numeric_std.all;
 library work;
 use work.constants.all;
 
@@ -13,8 +14,8 @@ entity instruction_fetch is
 	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	
 	--from other stages
-	branch : in std_logic;
-	branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
+	control_transfer : in std_logic;
+	new_PC : in std_logic_vector(PC_WIDTH - 1 downto 0);
 	stall : in std_logic;
 	
 	--to IFID preg
@@ -36,33 +37,46 @@ signal PC_in, PC_out : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal PC_incr : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal instruction : std_logic_vector(31 downto 0);
 signal SB_type_imm : std_logic_vector(11 downto 0);
+signal UJ_type_imm : std_logic_vector(19 downto 0);
+signal relevant_imm : std_logic_vector(19 downto 0);
 signal imem_address : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+signal control_target : std_logic_vector(PC_WIDTH - 1 downto 0);
 begin
 
 branch_taken <= '0';
 PC_incr_out <= PC_incr;
 current_PC <= PC_out;
-	
-combi : process(PC_incr, branch_target_in, branch, PC_in, imem_we, PC_out, imem_write_address)
+SB_type_imm <= instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8);
+UJ_type_imm <= instruction(31) & instruction(19 downto 12) & instruction(20) & instruction(30 downto 21); 
+branch_target_out <= control_target;
+combi : process(PC_incr, new_PC, control_transfer, UJ_type_imm, PC_in, imem_we, PC_out, imem_write_address, SB_type_imm, UJ_type_imm, instruction, control_target)
 
 begin
-	case(branch) is
-		when '0'    => PC_in <= PC_incr;
-		when '1'    => PC_in <= branch_target_in;
-		when others => PC_in <= (others => 'X');
-	end case;
+	relevant_imm <= std_logic_vector(resize(signed(SB_type_imm), relevant_imm'length));
+	PC_in <= PC_incr;
+	
+	if(control_transfer = '1') then
+		PC_in <= new_PC;
+	elsif(instruction(6 downto 0) = "1101111") then
+		PC_in <= control_target;
+		relevant_imm <= UJ_type_imm;
+	end if;
 	
 	case (imem_we) is
-		when '0' => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+		when '0' => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH + 1 downto 2);
 		when '1' => imem_address <= imem_write_address;
-		when others => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0); 
+		when others => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH + 1 downto 2); 
+	end case;
+	
+	case (instruction(6 downto 0)) is
+		when "1101111" => relevant_imm <= UJ_type_imm;
+		when others => relevant_imm <= std_logic_vector(resize(signed(SB_type_imm), relevant_imm'length));
 	end case;
 end process;
 	
 	
 PC_we <= not stall;
 instruction_o <= instruction;
-SB_type_imm <= instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8);
 
 PC : entity work.PC port map(
 	clk => clk,
@@ -77,10 +91,10 @@ PC_incrementer : entity work.PC_increment port map(
 	output => PC_incr
 	);
 	
-branch_target_adder : entity work.branch_target_adder port map(
+boj_target_adder : entity work.branch_target_adder port map(
 	PC_i => PC_out,
-	PC_o => branch_target_out,
-	imm => SB_type_imm
+	PC_o => control_target,
+	imm => relevant_imm
 	);
 	
 instruction_memory : entity work.SP_32bit generic map(
