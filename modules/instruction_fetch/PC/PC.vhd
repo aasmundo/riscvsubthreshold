@@ -48,7 +48,7 @@ seq : process(clk, we, nreset)
 begin
 	if(clk'event and clk = '1') then
 		if(nreset = '0') then
-			PC <= std_logic_vector(to_unsigned(0,PC_WIDTH));
+			PC <= std_logic_vector(to_unsigned(512,PC_WIDTH));
 		elsif(we = '1') then
 			PC <= PC_in;
 		end if;
