@@ -117,10 +117,6 @@ signal reg_we_WB : std_logic;
 signal ALU_result_WB : std_logic_vector(31 downto 0);
 begin
 
-flush_IFID <= '0';
-flush_IDEX <= '0';
-flush_EXMEM <= '0';
-flush_MEMWB <= '0';	
 mem_rs2_src_EX <= '0';
 
 
