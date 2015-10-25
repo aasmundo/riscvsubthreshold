@@ -160,6 +160,7 @@ IFID_pipline_register : entity work.IFID_preg port map(
 	
 instruction_decode : entity work.instruction_decode port map(
 	clk => clk,
+	nreset => nreset,
 	instr => instruction_IFID,
 	wb_reg => rd_MEMWB,
 	wb_data => wb_data_WB,

@@ -5,7 +5,8 @@ use ieee.numeric_std.all;
 
 entity register_file is	
 	port(
-	clk, 
+	clk,
+	nreset,
 	reg_write 						: in std_logic; 
 	read_register_1,
 	read_register_2, 
@@ -42,7 +43,9 @@ combi : process(read_register_1, read_register_2,register_a)
 seq : process(clk)
 	begin
 		if(clk'event and clk = '0') then
-			if(reg_write = '0' nor to_integer(unsigned(write_register)) = 0) then
+			if(nreset = '0') then
+				register_a <= (others => (others => '0'));
+			elsif(reg_write = '0' nor to_integer(unsigned(write_register)) = 0) then
 				register_a(to_integer(unsigned(write_register))) <= write_data;
 			end if;
 		end if;

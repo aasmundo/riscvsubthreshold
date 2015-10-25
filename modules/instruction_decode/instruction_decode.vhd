@@ -7,6 +7,7 @@ use work.constants.all;
 entity instruction_decode is
 	port(
 	clk : in std_logic;
+	nreset : in std_logic;
 	instr : in std_logic_vector(31 downto 0);
 	
 	wb_reg : in std_logic_vector(4 downto 0);
@@ -71,7 +72,8 @@ register_file : entity work.register_file port map
 		reg_write       => wb_write,
 		write_data      => wb_data,
 		read_data_1     => reg1,
-		read_data_2     => reg2		
+		read_data_2     => reg2,
+		nreset          => nreset
 	);
 
 	
