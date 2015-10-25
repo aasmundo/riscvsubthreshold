@@ -40,7 +40,7 @@ signal imem_we : std_logic;
 signal imem_data : std_logic_vector(31 downto 0);
 signal imem_write_address : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 begin
-clk <= not clk after 10ns;
+clk <= not clk after 1ns;
 
 design : entity work.top port map
 	(
