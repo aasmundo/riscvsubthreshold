@@ -26,16 +26,16 @@ begin
 	rs1_wb_conflict  <= '0';
 	rs2_mem_conflict <= '0';
 	rs2_wb_conflict  <= '0';
-	if(rs1_ex = rd_mem) then
+	if(rs1_ex = rd_mem and rd_mem /= "00000") then
 		rs1_mem_conflict <= rd_mem_we;
 	end if;
-	if(rs1_ex = rd_wb) then
+	if(rs1_ex = rd_wb and rd_wb /= "00000") then
 		rs1_wb_conflict  <= rd_wb_we;
 	end if;
-	if(rs2_ex = rd_mem) then
+	if(rs2_ex = rd_mem and rd_mem /= "00000") then
 		rs2_mem_conflict <= rd_mem_we;
 	end if;
-	if(rs2_ex = rd_wb) then
+	if(rs2_ex = rd_wb and rd_wb /= "00000") then
 		rs2_wb_conflict  <= rd_wb_we;
 	end if;
 	
