@@ -44,7 +44,7 @@ begin
 
 PC_ext <= std_logic_vector(resize(unsigned(current_PC), PC_ext'length));
 	
-alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg, reg_a_src, reg_b_src, PC_ext, reg_or_PC)
+alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg, reg_a_src, reg_b_src, PC_ext, reg_or_PC, a_reg)
 begin
 	reg_a_input_src_mux : case(reg_or_PC) is 
 		when '0'     => ALU_a_in <= a_reg;
