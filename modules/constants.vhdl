@@ -55,7 +55,7 @@ package constants is
 
 	
 	--data-memory--
-	constant DATA_MEM_WIDTH : integer := 16;
+	constant DATA_MEM_WIDTH : integer := 6;
 	
 	--misc--
 	constant UNKNOWN_32BIT : std_logic_vector(31 downto 0) := "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
