@@ -7,6 +7,7 @@ entity IFID_preg is
 	port(
 	clk : in std_logic;
 	flush : in std_logic;
+	stall : in std_logic;
 	
 	instruction_i : in std_logic_vector(31 downto 0);
 	branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
@@ -22,19 +23,42 @@ entity IFID_preg is
 end IFID_preg;
 
 architecture behave of IFID_preg is
-begin
+signal instruction : std_logic_vector(31 downto 0);
+signal branch_target :std_logic_vector(PC_WIDTH - 1 downto 0);
 	
-seq : process(clk, flush, instruction_i)
+signal current_PC : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal PC_incr : std_logic_vector(PC_WIDTH - 1 downto 0);
+
+begin
+
+branch_target_out <= branch_target;
+current_PC_out    <= current_PC;
+PC_incr_out <= PC_incr;
+instruction_o <= instruction;
+	
+seq : process(clk, flush, instruction_i, stall)
 begin
 	if(clk'event and clk = '1') then
-		if(flush = '1') then
-			 instruction_o <= x"00000000";
+		if(stall = '0')	then
+			branch_target <= branch_target_in;
+			current_PC    <= current_PC_in;
+			PC_incr <= PC_incr_in;
+			if(flush = '1') then
+			 	instruction <= x"00000000";
+			else
+			 	instruction <= instruction_i;
+			end if;
 		else
-			 instruction_o <= instruction_i;
+			branch_target <= branch_target;
+			current_PC    <= current_PC;
+			PC_incr <= PC_incr;
+			if(flush = '1') then
+			 	instruction <= x"00000000";
+			else
+			 	instruction <= instruction;
+			end if;
 		end if;
-		branch_target_out <= branch_target_in;
-		current_PC_out    <= current_PC_in;
-		PC_incr_out <= PC_incr_in;
+		
 	end if;
 end process;
 
