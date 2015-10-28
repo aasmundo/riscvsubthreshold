@@ -58,14 +58,15 @@ begin
 			mem_we_out <= '0';
 			is_branch_out <= '0';
 			is_jump_out <= '0';
+			rd_out <= "00000";
 		else
 			rd_we_out <= rd_we_in;
 			mem_we_out <= mem_we_in;
 			is_branch_out <= is_branch_in;
 			is_jump_out <= is_jump_in;
+			rd_out <= rd_in;
 		end if;					  
 		ALU_result_out <= ALU_result_in;
-		rd_out <= rd_in;
 		rs2_data_out <= rs2_data_in;  
 		wb_src_out <= wb_src_in;
 		mem_write_width_out <= mem_write_width_in;
