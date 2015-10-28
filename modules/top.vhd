@@ -9,7 +9,8 @@ entity top is
 	nreset : in std_logic;
 	imem_we : in std_logic;
 	imem_data : in std_logic_vector(31 downto 0);
-	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0)
+	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+	instruction : out std_logic_vector(31 downto 0)
 	);
 end top;
 
@@ -49,7 +50,8 @@ signal is_branch_ID : std_logic;
 signal mem_load_unsigned_ID : std_logic;
 signal ALU_operation_ID : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
 signal reg_or_PC_ID : std_logic;
-signal is_jump_ID : std_logic;
+signal is_jump_ID : std_logic; 
+signal stall_ID : std_logic;
 
 
 --IDEX pipeline register
@@ -78,7 +80,7 @@ signal PC_incr_IDEX  : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal ALU_result_EX : std_logic_vector(31 downto 0);
 signal mem_rs2_src_EX : std_logic;
 
---EXMEM pipeline register
+--EXMEM pipeline register 
 signal rd_EXMEM : std_logic_vector(4 downto 0);
 signal ALU_result_EXMEM : std_logic_vector(31 downto 0);
 signal reg_we_EXMEM : std_logic;
@@ -117,11 +119,13 @@ signal reg_we_WB : std_logic;
 signal ALU_result_WB : std_logic_vector(31 downto 0);
 begin
 
+instruction <= instruction_IFID;	
+	
 mem_rs2_src_EX <= '0';
 
-
+stall <= stall_ID and nreset;
 stall_IF <= stall;
-flush_IFID <= control_transfer_MEM or stall or not nreset;
+flush_IFID <= control_transfer_MEM or not nreset;
 flush_IDEX <= control_transfer_MEM or stall or not nreset;
 flush_EXMEM <= control_transfer_MEM or not nreset;
 flush_MEMWB <= not nreset;
@@ -144,6 +148,7 @@ instruction_fetch : entity work.instruction_fetch port map(
 IFID_pipline_register : entity work.IFID_preg port map(
 	clk => clk,
 	flush => flush_IFID,
+	stall => stall,
 	instruction_i => instruction_IF,
 	instruction_o => instruction_IFID,
 	branch_target_in => branch_target_IF,
@@ -177,7 +182,7 @@ instruction_decode : entity work.instruction_decode port map(
 	mem_load_unsigned => mem_load_unsigned_ID,
 	ex_rd => rd_IDEX,
 	ex_wb_src => wb_src_IDEX,
-	stall => stall,
+	stall => stall_ID,
 	reg_or_PC => reg_or_PC_ID,
 	is_jump => is_jump_ID
 	);
