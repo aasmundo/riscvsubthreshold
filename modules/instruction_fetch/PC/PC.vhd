@@ -43,7 +43,9 @@ signal PC : std_logic_vector(PC_WIDTH - 1 downto 0);
 begin
 
 PC_out <= PC;
-	
+
+assert (PC(1) /= '1' or PC(0) /= '0') report "PC not aligned" severity failure;
+
 seq : process(clk, we, nreset)
 begin
 	if(clk'event and clk = '1') then
