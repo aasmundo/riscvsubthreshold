@@ -88,7 +88,6 @@ begin
 		current_PC_out <= current_PC_in;
 		reg_or_PC_out <= reg_or_PC_in;
 		PC_incr_out <= PC_incr_in;
-		
 	end if;
 	
 	
