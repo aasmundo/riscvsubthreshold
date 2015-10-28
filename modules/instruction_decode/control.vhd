@@ -53,7 +53,6 @@ begin
 						              wb_we     <= '1';
 		                              wb_src    <= "10";
 									  is_jump   <= '1';
-									  reg_or_PC <= '1';
 		when others    => NULL;
 	end case;
 	
