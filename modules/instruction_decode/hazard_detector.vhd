@@ -32,7 +32,9 @@ begin
 		else				 rs2_eq_rd <= '0';
 		end if;
 		
-		stall <= (rs1_eq_rd and ex_wb_src(0)) or (rs2_eq_rd and ex_wb_src(0) and (not is_imm));
+		stall <= (rs1_eq_rd and ex_wb_src(0)) or 
+		(rs2_eq_rd and ex_wb_src(0) and (not is_imm)) or
+		(ex_wb_src(1) and (rs2_eq_rd or rs1_eq_rd));
 	end process;
 	
 	
