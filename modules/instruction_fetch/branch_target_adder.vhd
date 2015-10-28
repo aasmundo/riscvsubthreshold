@@ -17,7 +17,7 @@ signal signed_imm : signed(20 downto 0);
 signal signed_PC : signed(PC_WIDTH downto 0);
 begin
 
-combi : process(PC_i, imm, signed_imm)
+combi : process(PC_i, imm, signed_imm, signed_PC)
 begin
 	signed_imm <= signed(imm & '0');
 	signed_PC <= signed('0' & PC_i);
