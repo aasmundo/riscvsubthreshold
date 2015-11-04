@@ -11,6 +11,8 @@ entity EXMEM_preg is
 	ALU_result_out : out std_logic_vector(31 downto 0);
 	rs2_data_in : in std_logic_vector(31 downto 0);
 	rs2_data_out : out std_logic_vector(31 downto 0);
+	rs2_adr_in : in std_logic_vector(4 downto 0);
+	rs2_adr_out : out std_logic_vector(4 downto 0);
 	
 	branch_target_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	branch_target_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
@@ -59,12 +61,14 @@ begin
 			is_branch_out <= '0';
 			is_jump_out <= '0';
 			rd_out <= "00000";
+			rs2_adr_out <= "00000";
 		else
 			rd_we_out <= rd_we_in;
 			mem_we_out <= mem_we_in;
 			is_branch_out <= is_branch_in;
 			is_jump_out <= is_jump_in;
 			rd_out <= rd_in;
+			rs2_adr_out <= rs2_adr_in;
 		end if;					  
 		ALU_result_out <= ALU_result_in;
 		rs2_data_out <= rs2_data_in;  
