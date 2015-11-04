@@ -15,12 +15,14 @@ entity execute is
 		is_imm : in std_logic;
 		rs1 : in std_logic_vector(4 downto 0);
 		rs2 : in std_logic_vector(4 downto 0);
+		rs2_out : out std_logic_vector(31 downto 0);
 		rd : in std_logic_vector(4 downto 0);
 		current_PC : in std_logic_vector(PC_WIDTH - 1 downto 0);
 		reg_or_PC : in std_logic;
 		
 	--from memory
 		rd_dest_mem : in std_logic_vector(4 downto 0);
+		rs2_adr_mem : in std_logic_vector(4 downto 0);
 		rd_data_mem : in std_logic_vector(31 downto 0);
 		rd_we_mem   : in std_logic;
 		
@@ -31,7 +33,8 @@ entity execute is
 		
 		
 	--//\\--
-		ALU_result : out std_logic_vector(31 downto 0)
+		ALU_result : out std_logic_vector(31 downto 0);
+		mem_rs2_src : out std_logic
 		
 	);
 end execute;
@@ -43,7 +46,7 @@ signal reg_a_src , reg_b_src : std_logic_vector(1 downto 0);
 begin
 
 PC_ext <= std_logic_vector(resize(unsigned(current_PC), PC_ext'length));
-	
+rs2_out <= b_reg;	
 alu_input_selection : process(reg1, reg2, imm, is_imm, rd_data_mem, rd_data_wb, b_reg, reg_a_src, reg_b_src, PC_ext, reg_or_PC, a_reg)
 begin
 	reg_a_input_src_mux : case(reg_or_PC) is 
@@ -84,11 +87,13 @@ Arithmetic_logic_unit : entity work.ALU port map(
 data_forwarder : entity work.forwarder port map(
 	rs1_ex => rs1,
 	rs2_ex => rs2,
+	rs2_mem => rs2_adr_mem,
 	rd_mem => rd_dest_mem,
 	rd_wb  => rd_dest_wb,
 	rd_mem_we => rd_we_mem,
 	rd_wb_we => rd_we_wb,
 	rs1_src => reg_a_src,
-	rs2_src => reg_b_src
+	rs2_src => reg_b_src,
+	mem_rs2_src => mem_rs2_src
 	);
 end behave;

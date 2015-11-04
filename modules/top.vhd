@@ -10,7 +10,12 @@ entity top is
 	imem_we : in std_logic;
 	imem_data : in std_logic_vector(31 downto 0);
 	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
-	instruction : out std_logic_vector(31 downto 0)
+	instruction : out std_logic_vector(31 downto 0);
+	
+	dmem_we : in std_logic;
+	dmem_data : in std_logic_vector(31 downto 0);
+	dmem_write_address : in std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+	dmem_be : in std_logic_vector(1 downto 0)
 	);
 end top;
 
@@ -78,9 +83,11 @@ signal PC_incr_IDEX  : std_logic_vector(PC_WIDTH - 1 downto 0);
 
 --Execute
 signal ALU_result_EX : std_logic_vector(31 downto 0);
-signal mem_rs2_src_EX : std_logic;
+signal mem_rs2_src_EX : std_logic; 
+signal rs2_EX :  std_logic_vector(31 downto 0);
 
---EXMEM pipeline register 
+--EXMEM pipeline register 	
+signal rs2_adr_EXMEM : std_logic_vector(4 downto 0);
 signal rd_EXMEM : std_logic_vector(4 downto 0);
 signal ALU_result_EXMEM : std_logic_vector(31 downto 0);
 signal reg_we_EXMEM : std_logic;
@@ -121,7 +128,7 @@ begin
 
 instruction <= instruction_IFID;	
 	
-mem_rs2_src_EX <= '0';
+
 
 stall <= stall_ID and nreset;
 stall_IF <= stall;
@@ -238,6 +245,7 @@ Execute : entity work.execute port map(
 	is_imm => is_imm_IDEX,
 	rs1 => rs1_IDEX,
 	rs2 => rs2_IDEX,
+	rs2_out => rs2_EX,
 	rd => rd_IDEX,
 	rd_dest_mem => rd_EXMEM,
 	rd_data_mem => ALU_result_EXMEM,
@@ -247,7 +255,9 @@ Execute : entity work.execute port map(
 	rd_we_wb => wb_we_MEMWB,
 	ALU_result => ALU_result_EX,
 	current_PC => current_PC_IDEX,
-	reg_or_PC => reg_or_PC_IDEX
+	reg_or_PC => reg_or_PC_IDEX,
+	rs2_adr_mem => rs2_adr_EXMEM,
+	mem_rs2_src => mem_rs2_src_EX
 	);
 
 EXMEM_pipeline_register : entity work.EXMEM_preg port map(
@@ -255,7 +265,7 @@ EXMEM_pipeline_register : entity work.EXMEM_preg port map(
 	flush => flush_EXMEM,
 	ALU_result_in => ALU_result_EX,
 	ALU_result_out => ALU_result_EXMEM,
-	rs2_data_in => reg2_IDEX,
+	rs2_data_in => rs2_EX,
 	rs2_data_out => reg2_EXMEM,
 	mem_we_in => mem_we_IDEX,
 	mem_we_out => mem_we_EXMEM,
@@ -276,7 +286,9 @@ EXMEM_pipeline_register : entity work.EXMEM_preg port map(
 	is_jump_in => is_jump_IDEX,
 	is_jump_out => is_jump_EXMEM,
 	PC_incr_in => PC_incr_IDEX,
-	PC_incr_out => PC_incr_EXMEM
+	PC_incr_out => PC_incr_EXMEM,
+	rs2_adr_in => rs2_IDEX,
+	rs2_adr_out => rs2_adr_EXMEM
 	);
 funct3_EXMEM <= mem_load_unsigned_EXMEM & mem_be_EXMEM;	
 memory : entity work.memory port map(
@@ -293,7 +305,11 @@ memory : entity work.memory port map(
 	branch_target => branch_target_EXMEM,
 	new_PC => new_PC_MEM,
 	is_branch => is_branch_EXMEM,
-	is_jump => is_jump_EXMEM
+	is_jump => is_jump_EXMEM,
+	tb_mem_we => dmem_we,
+	tb_mem_data => dmem_data,
+	tb_mem_write_addr => dmem_write_address,
+	tb_mem_be => dmem_be
 	);
 
 MEMWB_pipeline_registers : entity work.MEMWB_preg port map(
