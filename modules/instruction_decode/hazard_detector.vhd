@@ -24,12 +24,12 @@ begin
 
 	process(ex_wb_src, rs1, rs2, ex_rd, is_imm, rs1_eq_rd, rs2_eq_rd) 
 	begin
-		if(rs1 = ex_rd) then rs1_eq_rd <= '1';
-		else                 rs1_eq_rd <= '0';
+		if(rs1 = ex_rd and rs1 /= "00000") then rs1_eq_rd <= '1';
+		else                                    rs1_eq_rd <= '0';
 		end if;
 		
-		if(rs2 = ex_rd) then rs2_eq_rd <= '1';
-		else				 rs2_eq_rd <= '0';
+		if(rs2 = ex_rd and rs2 /= "00000") then rs2_eq_rd <= '1';
+		else				                    rs2_eq_rd <= '0';
 		end if;
 		
 		stall <= (rs1_eq_rd and ex_wb_src(0)) or 
