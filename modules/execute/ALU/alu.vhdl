@@ -6,16 +6,16 @@ library work;
 use work.constants.all;
 
 
-entity ALU is
+entity alu is
 port (
     A, B      : in std_logic_vector(31 downto 0);
     operation : in std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
     
     result    : out std_logic_vector(31 downto 0)
 );
-end ALU;
+end alu;
 
-architecture ALU_arch of ALU is
+architecture alu_arch of alu is
 signal add_res, sub_res, and_res, or_res, xor_res,  
 	   sll_res, sra_res, srl_res, slt_res, sltu_res,
 	   b_pass_through_res : signed(31 downto 0);
