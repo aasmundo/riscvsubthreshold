@@ -77,7 +77,7 @@ begin
 
 end process;
 
-Arithmetic_logic_unit : entity work.ALU port map(
+Arithmetic_logic_unit : entity work.alu port map(
 	A => ALU_a_in,
 	B => ALU_b_in,
 	operation => ALU_operation,
