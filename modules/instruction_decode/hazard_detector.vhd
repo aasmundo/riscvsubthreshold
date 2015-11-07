@@ -17,7 +17,6 @@ entity hazard_detector is
 end hazard_detector;
 
 architecture behave of hazard_detector is
-signal hazard_vector : std_logic_vector(1 downto 0);
 signal rs1_eq_rd, rs2_eq_rd	: std_logic;
 begin
 
