@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use ieee.numeric_std.all;
 library work;
 use work.constants.all;
 
@@ -25,12 +26,12 @@ signal stall : std_logic;
 
 
 --Instruction fetch
-signal branch_IF : std_logic;
 signal branch_target_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal stall_IF : std_logic;
 signal instruction_IF : std_logic_vector(31 downto 0);
 signal PC_incr_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal current_PC_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal branched_IF : std_logic;
 
 --IFID pipline register
 signal instruction_IFID : std_logic_vector(31 downto 0);
@@ -38,6 +39,7 @@ signal flush_IFID : std_logic;
 signal branch_target_IFID : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal current_PC_IFID : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal PC_incr_IFID  : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal branched_IFID : std_logic;
 
 --Instruction decode
 signal reg1_ID : std_logic_vector(31 downto 0);
@@ -80,6 +82,7 @@ signal current_PC_IDEX : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal reg_or_PC_IDEX : std_logic;
 signal is_jump_IDEX : std_logic;
 signal PC_incr_IDEX  : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal branched_IDEX : std_logic;
 
 --Execute
 signal ALU_result_EX : std_logic_vector(31 downto 0);
@@ -90,7 +93,6 @@ signal rs2_EX :  std_logic_vector(31 downto 0);
 signal rs2_adr_EXMEM : std_logic_vector(4 downto 0);
 signal rd_EXMEM : std_logic_vector(4 downto 0);
 signal ALU_result_EXMEM : std_logic_vector(31 downto 0);
-signal reg_we_EXMEM : std_logic;
 signal flush_EXMEM : std_logic;
 signal reg2_EXMEM : std_logic_vector(31 downto 0);
 signal mem_we_EXMEM : std_logic;
@@ -101,13 +103,14 @@ signal wb_src_EXMEM : std_logic_vector(1 downto 0);
 signal mem_load_unsigned_EXMEM : std_logic;
 signal funct3_EXMEM : std_logic_vector(2 downto 0);
 signal branch_target_EXMEM : std_logic_vector(PC_WIDTH - 1 downto 0);
-signal current_PC_EXMEM : std_logic_vector(PC_WIDTH - 1 downto 0); 
 signal is_jump_EXMEM : std_logic;
 signal PC_incr_EXMEM  : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal branched_EXMEM : std_logic;
 --Memory
 signal mem_read_MEM : std_logic_vector(31 downto 0);
 signal control_transfer_MEM : std_logic;
 signal new_PC_MEM : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal branch_MEM : std_logic;
 --MEMWB pipeline register
 signal ALU_result_MEMWB : std_logic_vector(31 downto 0);
 signal flush_MEMWB : std_logic;
@@ -117,21 +120,42 @@ signal wb_we_MEMWB : std_logic;
 signal rd_MEMWB : std_logic_vector(4 downto 0);
 signal mem_load_unsigned_MEMWB : std_logic;
 signal mem_load_width_MEMWB : std_logic_vector(1 downto 0);
-signal current_PC_MEMWB : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal PC_incr_MEMWB  : std_logic_vector(PC_WIDTH - 1 downto 0);
 --Write back
-signal rd_WB : std_logic_vector(4 downto 0);
 signal wb_data_WB : std_logic_vector(31 downto 0);
-signal reg_we_WB : std_logic;
-signal ALU_result_WB : std_logic_vector(31 downto 0);
+--pragma synthesis_off
+--performance counters
+signal clocks_since_reset : integer := 0;
+signal stalls : integer := 0;
+signal control_transfers : integer := 0;
+--pragma synthesis_on
 begin
-
+--pragma synthesis_off
+performance : process(clk, nreset)
+begin 
+	if(clk'event and clk = '1') then
+		if(stall_IF = '1') then
+			stalls <= stalls + 1;
+		end if;
+		if(control_transfer_MEM = '1') then
+			control_transfers <= control_transfers + 1;
+		end if;
+		clocks_since_reset <= clocks_since_reset + 1;
+	elsif(nreset = '0') then
+		clocks_since_reset <= 0;
+		stalls <= 0;
+		control_transfers <= 0;
+	end if;
+	
+end process;
+--pragma synthesis_on	
+	
 instruction <= instruction_IFID;	
 	
 
 
 stall <= stall_ID and nreset;
-stall_IF <= stall;
+stall_IF <= stall and not control_transfer_MEM;
 flush_IFID <= control_transfer_MEM or not nreset;
 flush_IDEX <= control_transfer_MEM or stall or not nreset;
 flush_EXMEM <= control_transfer_MEM or not nreset;
@@ -149,7 +173,11 @@ instruction_fetch : entity work.instruction_fetch port map(
 	imem_we => imem_we,
 	imem_write_address => imem_write_address,
 	current_PC => current_PC_IF,
-	PC_incr_out => PC_incr_IF
+	PC_incr_out => PC_incr_IF,
+	branched => branched_IF,
+	PC_incr_MEM => PC_incr_EXMEM,
+	branch_MEM => branch_MEM,
+	is_branch_MEM => is_branch_EXMEM
 	);
 	
 IFID_pipline_register : entity work.IFID_preg port map(
@@ -163,7 +191,9 @@ IFID_pipline_register : entity work.IFID_preg port map(
 	current_PC_in => current_PC_IF,
 	current_PC_out => current_PC_IFID,
 	PC_incr_in => PC_incr_IF,
-	PC_incr_out => PC_incr_IFID
+	PC_incr_out => PC_incr_IFID,
+	branched_in => branched_IF,
+	branched_out => branched_IFID
 	);
 	
 instruction_decode : entity work.instruction_decode port map(
@@ -234,7 +264,9 @@ IDEX_pipeline_register : entity work.IDEX_preg port map(
 	is_jump_in => is_jump_ID,
 	is_jump_out => is_jump_IDEX,
 	PC_incr_in => PC_incr_IFID,
-	PC_incr_out => PC_incr_IDEX
+	PC_incr_out => PC_incr_IDEX,
+	branched_in => branched_IFID,
+	branched_out => branched_IDEX
 	);
 
 Execute : entity work.execute port map(
@@ -288,14 +320,16 @@ EXMEM_pipeline_register : entity work.EXMEM_preg port map(
 	PC_incr_in => PC_incr_IDEX,
 	PC_incr_out => PC_incr_EXMEM,
 	rs2_adr_in => rs2_IDEX,
-	rs2_adr_out => rs2_adr_EXMEM
+	rs2_adr_out => rs2_adr_EXMEM,
+	branched_in => branched_IDEX,
+	branched_out => branched_EXMEM
 	);
 funct3_EXMEM <= mem_load_unsigned_EXMEM & mem_be_EXMEM;	
 memory : entity work.memory port map(
 	clk => clk,
 	ALU_result => ALU_result_EXMEM,
 	rs2_data_ex => reg2_EXMEM,
-	rs2_data_WB => ALU_result_MEMWB,
+	rs2_data_WB => wb_data_WB,
 	rs2_src => mem_rs2_src_EX,
 	mem_write_width => mem_be_EXMEM,
 	mem_we => mem_we_EXMEM,
@@ -309,7 +343,10 @@ memory : entity work.memory port map(
 	tb_mem_we => dmem_we,
 	tb_mem_data => dmem_data,
 	tb_mem_write_addr => dmem_write_address,
-	tb_mem_be => dmem_be
+	tb_mem_be => dmem_be,
+	PC_incr => PC_incr_EXMEM,
+	branched => branched_EXMEM,
+	branch_out => branch_MEM
 	);
 
 MEMWB_pipeline_registers : entity work.MEMWB_preg port map(

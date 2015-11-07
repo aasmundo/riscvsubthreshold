@@ -18,7 +18,9 @@ entity IFID_preg is
 	current_PC_in : in std_logic_vector(PC_WIDTH - 1 downto 0);
 	current_PC_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	PC_incr_in :  in std_logic_vector(PC_WIDTH - 1 downto 0);
-	PC_incr_out :  out std_logic_vector(PC_WIDTH - 1 downto 0)
+	PC_incr_out :  out std_logic_vector(PC_WIDTH - 1 downto 0);
+	branched_in : in std_logic;
+	branched_out : out std_logic
 	);
 end IFID_preg;
 
@@ -28,14 +30,14 @@ signal branch_target :std_logic_vector(PC_WIDTH - 1 downto 0);
 	
 signal current_PC : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal PC_incr : std_logic_vector(PC_WIDTH - 1 downto 0);
-
+signal branched : std_logic;
 begin
 
 branch_target_out <= branch_target;
 current_PC_out    <= current_PC;
 PC_incr_out <= PC_incr;
 instruction_o <= instruction;
-	
+branched_out <= branched;	
 seq : process(clk, flush, instruction_i, stall)
 begin
 	if(clk'event and clk = '1') then
@@ -45,7 +47,9 @@ begin
 			PC_incr <= PC_incr_in;
 			if(flush = '1') then
 			 	instruction <= x"00000000";
+				 branched <= '0';
 			else
+				branched <= branched_in;
 			 	instruction <= instruction_i;
 			end if;
 		else
@@ -54,7 +58,9 @@ begin
 			PC_incr <= PC_incr;
 			if(flush = '1') then
 			 	instruction <= x"00000000";
+				 branched <= '0';
 			else
+				branched <= branched;
 			 	instruction <= instruction;
 			end if;
 		end if;

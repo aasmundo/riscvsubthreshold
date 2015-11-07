@@ -22,10 +22,13 @@ entity instruction_fetch is
 	instruction_o : out std_logic_vector(31 downto 0);
 	branch_target_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	current_PC : out std_logic_vector(PC_WIDTH - 1 downto 0);
+	branched : out std_logic;
 	
 	--Branch prediction
 	PC_incr_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
-	branch_taken : out std_logic
+	PC_incr_MEM : in std_logic_vector(PC_WIDTH - 1 downto 0);
+	branch_MEM : in std_logic;
+	is_branch_MEM : in std_logic
 	--**--
 	
 	);
@@ -41,27 +44,21 @@ signal UJ_type_imm : std_logic_vector(19 downto 0);
 signal relevant_imm : std_logic_vector(19 downto 0);
 signal imem_address : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 signal control_target : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal is_branch : std_logic;
+signal branch_prediction : std_logic;
 begin
 
-branch_taken <= '0';
+
 PC_incr_out <= PC_incr;
 current_PC <= PC_out;
 SB_type_imm <= instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8);
 UJ_type_imm <= instruction(31) & instruction(19 downto 12) & instruction(20) & instruction(30 downto 21); 
 branch_target_out <= control_target;
-combi : process(PC_incr, new_PC, control_transfer, UJ_type_imm, PC_in, imem_we, PC_out, imem_write_address, SB_type_imm, UJ_type_imm, instruction, control_target)
+
+combi : process(PC_incr, new_PC, control_transfer, UJ_type_imm, PC_in, imem_we, PC_out, imem_write_address, SB_type_imm, UJ_type_imm, instruction, control_target, branch_prediction, is_branch)
 
 begin
-	relevant_imm <= std_logic_vector(resize(signed(SB_type_imm), relevant_imm'length));
-	PC_in <= PC_incr;
-	
-	if(control_transfer = '1') then
-		PC_in <= new_PC;
-	elsif(instruction(6 downto 0) = "1101111") then
-		PC_in <= control_target;
-		relevant_imm <= UJ_type_imm;
-	end if;
-	
+
 	case (imem_we) is
 		when '0' => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH + 1 downto 2);
 		when '1' => imem_address <= imem_write_address;
@@ -73,7 +70,25 @@ begin
 		when others => relevant_imm <= std_logic_vector(resize(signed(SB_type_imm), relevant_imm'length));
 	end case;
 end process;
-	
+
+
+PC_input : process(control_transfer, instruction(6 downto 0), branch_prediction, PC_incr, control_target, new_PC)
+
+begin
+	branched <= '0';
+	PC_in <= PC_incr;
+	if(control_transfer = '1') then
+		PC_in <= new_PC;
+	elsif(instruction(6 downto 0) = "1101111") then
+		PC_in <= control_target;
+	elsif(instruction(6 downto 0) = "1100011" and branch_prediction = '1') then
+		PC_in <= control_target;  
+		branched <= '1';
+	end if;
+end process;
+
+
+
 	
 PC_we <= not stall;
 instruction_o <= instruction;
@@ -95,6 +110,18 @@ boj_target_adder : entity work.branch_target_adder port map(
 	PC_i => PC_out,
 	PC_o => control_target,
 	imm => relevant_imm
+	);
+	
+branch_predictor : entity work.branch_predictor generic map(
+	prediction_window => PREDICTION_TABLE_SIZE)
+	port map(
+	clk => clk,
+	nreset => nreset,
+	PC_incr_IF => PC_incr(PREDICTION_TABLE_SIZE + 1 downto 2),
+	PC_incr_MEM => PC_incr_MEM(PREDICTION_TABLE_SIZE + 1 downto 2),
+	prediction => branch_prediction,
+	branch_MEM => branch_MEM,
+	is_branch_MEM => is_branch_MEM
 	);
 	
 instruction_memory : entity work.SP_32bit generic map(

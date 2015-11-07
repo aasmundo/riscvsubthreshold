@@ -42,7 +42,9 @@ entity EXMEM_preg is
 	wb_src_in : in std_logic_vector(1 downto 0);
 	wb_src_out : out std_logic_vector(1 downto 0);
 	mem_load_unsigned_in : in std_logic;  
-	mem_load_unsigned_out : out std_logic
+	mem_load_unsigned_out : out std_logic;
+	branched_in : in std_logic;
+	branched_out : out std_logic
 	);
 end EXMEM_preg;	  
 
@@ -62,7 +64,9 @@ begin
 			is_jump_out <= '0';
 			rd_out <= "00000";
 			rs2_adr_out <= "00000";
+			branched_out <= '0';
 		else
+			branched_out <= branched_in;
 			rd_we_out <= rd_we_in;
 			mem_we_out <= mem_we_in;
 			is_branch_out <= is_branch_in;

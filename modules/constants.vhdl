@@ -55,12 +55,15 @@ package constants is
 
 	
 	--data-memory--
-	constant DATA_MEM_WIDTH : integer := 6;
+	constant DATA_MEM_WIDTH : integer := 16;
 	
 	--misc--
 	constant UNKNOWN_32BIT : std_logic_vector(31 downto 0) := "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 	
 	constant PC_WIDTH : integer := 14;
+	
+	--branch prediction
+	constant PREDICTION_TABLE_SIZE : integer := 6;
 
 	
 

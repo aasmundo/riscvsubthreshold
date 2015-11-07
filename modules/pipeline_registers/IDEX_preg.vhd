@@ -48,8 +48,9 @@ entity IDEX_preg is
 		is_jump_in : in std_logic;
 		is_jump_out : out std_logic;
 		PC_incr_in :  in std_logic_vector(PC_WIDTH - 1 downto 0);
-		PC_incr_out :  out std_logic_vector(PC_WIDTH - 1 downto 0)
-
+		PC_incr_out :  out std_logic_vector(PC_WIDTH - 1 downto 0);
+		branched_in : in std_logic;
+		branched_out : out std_logic
 	);
 end IDEX_preg;
 
@@ -66,7 +67,9 @@ begin
 			wb_we_out  <= '0';
 			is_branch_out  <= '0';
 			is_jump_out <= '0';
+			branched_out <= '0';
 		else
+			branched_out <= branched_in;
 			rd_out <= rd_in;
 			mem_we_out <= mem_we_in;
 			wb_we_out  <= wb_we_in;

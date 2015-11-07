@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use ieee.numeric_std.all;
 library work;
 use work.constants.all;
 
@@ -22,7 +23,11 @@ entity memory is
 	control_transfer : out std_logic;
 	
 	mem_read_out : out std_logic_vector(31 downto 0);
+	branched : in std_logic;
+	PC_incr : in std_logic_vector(PC_WIDTH - 1 downto 0);
 	
+	--branch_prediction
+	branch_out : out std_logic;
 	
 	--testbench input
 	tb_mem_we : in std_logic;
@@ -41,7 +46,32 @@ signal bram_we : std_logic;
 signal bram_data_in : std_logic_vector(31 downto 0);
 signal bram_addr : std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
 signal bram_mem_be : std_logic_vector(1 downto 0);
+signal incorrect_branch : std_logic;
+signal correct_PC : std_logic_vector(PC_WIDTH - 1 downto 0);
+--pragma synthesis_off
+--performance counter
+signal branches, is_branches, wrong_predictions : integer := 0;
+--pragma synthesis_on
 begin 
+--pragma synthesis_off	
+performance : process(clk)
+begin
+	if(clk'event and clk = '1') then
+		if(branch = '1' and is_branch = '1') then
+			branches <= branches + 1;
+		end if;
+		if(is_branch = '1') then
+			is_branches <= is_branches + 1;
+		end if;
+		if(incorrect_branch = '1') then
+			wrong_predictions <= wrong_predictions + 1;
+		end if;
+	end if;
+end process;
+--pragma synthesis_on
+--branch predictor output
+branch_out <= branch;
+
 data_mem_input : process(tb_mem_we, tb_mem_data, tb_mem_be, tb_mem_write_addr, mem_write_width, ALU_result, mem_we, rs2_data)
 begin
 	if(tb_mem_we = '0') then
@@ -83,14 +113,20 @@ branch_control : entity branch_control port map(
 	branch => branch	
 );
 
-process(is_jump, ALU_result, branch_target, branch, is_jump)
+process(is_jump, ALU_result, branch_target, branch, is_jump, incorrect_branch, correct_PC, branched, is_branch, PC_incr)
 
 begin
+	if(branch /= branched) then incorrect_branch <= '1';
+	else						incorrect_branch <= '0';
+	end if;
+	if(branch = '1') then correct_PC <= branch_target;
+	else 				  correct_PC <= PC_incr;
+	end if;
 	case (is_jump) is
 		when '1' => new_PC <= ALU_result(PC_WIDTH - 1 downto 0);
-		when others => new_PC <= branch_target;
+		when others => new_PC <= correct_PC;
 	end case;
-	control_transfer <= branch or is_jump;
+	control_transfer <= (is_branch and incorrect_branch) or is_jump;
 end process;
 
 
