@@ -79,7 +79,7 @@ register_file : entity work.register_file port map
 	
 control : entity work.control port map
 	(
-		opcode => instr(6 downto 0),
+		opcode => opcode,
 		funct3 => instr(14 downto 12),
 		wb_we => wb_we,	
 		wb_src => wb_src,

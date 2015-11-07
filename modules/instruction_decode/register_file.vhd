@@ -21,38 +21,31 @@ end register_file;
 architecture behave of register_file is
 type register_array is array(1 to 31) of std_logic_vector(31 downto 0);
 signal register_a : register_array;
-signal read_pass_t_1, read_pass_t_2 : std_logic;
+signal read_1, read_2 : std_logic_vector(31 downto 0);
 begin	
-combi : process(write_register, read_register_1, read_register_2, read_pass_t_2, read_pass_t_1, write_data, register_a)
+combi : process(write_register, read_register_1, read_register_2, write_data, register_a, read_1, read_2, reg_write)
 
 begin
-	read_pass_t_1 <= '0';
-	read_pass_t_2 <= '0';
-	if(read_register_1 = write_register) then read_pass_t_1 <= '1'; 
+	if(read_register_1 = write_register and read_register_1 /= "00000" and reg_write = '1') then read_data_1 <= write_data; 
+	else                                      						   read_data_1 <= read_1;
 	end if;
-	if(read_register_2 = write_register) then read_pass_t_2 <= '1'; 
+	if(read_register_2 = write_register and read_register_2 /= "00000" and reg_write = '1') then read_data_2 <= write_data;
+	else                                      							read_data_2 <= read_2;
 	end if;
 	
-	case (read_register_1) is
-		when "00000" =>
-			read_data_1 <= x"00000000";
+	
+	case (to_integer(unsigned(read_register_1))) is
+		when 0 =>
+			read_1 <= x"00000000";
 		when others =>
-			if(	read_pass_t_1 = '0') then
-				read_data_1 <= register_a(to_integer(unsigned(read_register_1))); 
-			else 
-				read_data_1 <= write_data;
-			end if;
+			read_1 <= register_a(to_integer(unsigned(read_register_1))); 
 	end case;
 		
-	case (read_register_2) is
-		when "00000" =>
-			read_data_2 <= x"00000000";
+	case (to_integer(unsigned(read_register_2))) is
+		when 0 =>
+			read_2 <= x"00000000";
 		when others =>
-			if(	read_pass_t_2 = '0') then
-				read_data_2 <= register_a(to_integer(unsigned(read_register_2)));
-			else 
-				read_data_2 <= write_data;
-			end if;
+			read_2 <= register_a(to_integer(unsigned(read_register_2)));
 	end case;
 		
 end process;
