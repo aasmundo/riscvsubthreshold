@@ -31,7 +31,7 @@ shamt_type <= x"000000" & "000" & instr(24 downto 20);
 
 
 
-process(opcode, i_type, s_type, u_type, ub_type, funct3, i_or_shamt, i_and_shamt_type)
+process(opcode, i_type, s_type, u_type, ub_type, funct3, i_or_shamt, i_and_shamt_type, shamt_type)
 begin
 	is_imm <= '1';
 	case(opcode) is
