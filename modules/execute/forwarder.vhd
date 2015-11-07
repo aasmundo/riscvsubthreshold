@@ -21,7 +21,7 @@ signal rs2_exmem_conflict, rs2_exwb_conflict : std_logic;
 signal rs2_memwb_conflict : std_logic;
 begin
 	
-combi : process(rs1_ex, rs2_ex, rd_mem, rd_wb, rd_mem_we, rd_wb_we, rs1_exmem_conflict, rs1_exwb_conflict, rs2_exmem_conflict, rs2_exwb_conflict, rs2_memwb_conflict)
+combi : process(rs1_ex, rs2_ex, rd_mem, rd_wb, rd_mem_we, rd_wb_we, rs1_exmem_conflict, rs1_exwb_conflict, rs2_exmem_conflict, rs2_exwb_conflict, rs2_memwb_conflict, rs2_mem)
 
 begin
 	rs1_exmem_conflict <= '0';
