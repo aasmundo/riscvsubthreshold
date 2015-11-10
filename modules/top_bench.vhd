@@ -14,7 +14,7 @@ architecture behave of top_bench is
 signal clk : std_logic := '0';
 signal nreset : std_logic := '0';
 type mem_t is array(0 to ((2**PC_WIDTH) - 1)) of std_logic_vector(31 downto 0);
-type tests_t is array(0 to 35) of mem_t;
+type tests_t is array(0 to 36) of mem_t;
 --type string_array is array(0 to 4) of string;
 --constant files : string_array := ("C:\prosjektoppgave\riscvsubthreshold\tests\myTests\rv32ui-p-add.hex",
 --"C:\prosjektoppgave\riscvsubthreshold\tests\myTests\rv32ui-p-addi.hex", 
@@ -72,12 +72,14 @@ design : entity work.top port map
 
 
 process(clk) 
-variable i,j : integer := 0;
+variable i : integer := 0;
+variable j : integer := 0;
 variable reading_done : integer := 0;
 begin 
 	
 assert ((instruction /= x"0100006f") or (nreset = '0')) report "test " & integer'image(j) &" FAIL" severity failure;
 assert ((instruction /= x"0040006f") or (nreset = '0')) report "test " & integer'image(j) &" PASS" severity error;
+assert ((instruction /= x"ffffffff") or (nreset = '0')) report "test " & integer'image(j) &" returned" severity failure;
 assert (j < 36) or (nreset = '0') report "All tests pass :)" severity failure;
 if(reading_done = 0) then
 	tests(0) <= ocram_ReadMemFile("C:\prosjektoppgave\riscvsubthreshold\tests\myTests\rv32ui-p-add.hex");	  --pass
@@ -116,20 +118,24 @@ if(reading_done = 0) then
 	tests(33) <= ocram_ReadMemFile("C:\prosjektoppgave\riscvsubthreshold\tests\myTests\rv32ui-p-sw.hex");
 	tests(34) <= ocram_ReadMemFile("C:\prosjektoppgave\riscvsubthreshold\tests\myTests\rv32ui-p-xor.hex");
 	tests(35) <= ocram_ReadMemFile("C:\prosjektoppgave\riscvsubthreshold\tests\myTests\rv32ui-p-xori.hex");
+	tests(36) <= ocram_ReadMemFile("C:\prosjektoppgave\riscvsubthreshold\tests\myTests\rv32ui-findPrime.hex");
 	reading_done := 1;
 end if;
-
+--j:=30;
 if(clk'event and clk = '1') then
-	imem_write_address <= std_logic_vector(to_unsigned(i, INSTRUCTION_MEM_WIDTH));
+	imem_write_address <= std_logic_vector(to_unsigned(4 * i, INSTRUCTION_MEM_WIDTH));
 	dmem_write_address <= std_logic_vector(to_unsigned(i, DATA_MEM_WIDTH - 2)) & "00";
 	if(tests(j)(i) /= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU") then
 		imem_data <= tests(j)(i);
 		dmem_data <= tests(j)(i);
-		if(i < 1000) then
+		if(i < 1000 and (i * 4) < 2**INSTRUCTION_MEM_WIDTH) then
 			imem_we <= '1';
 			dmem_we <= '0';
-		else
+		elsif(i > 1000) then
 			dmem_we <= '1';
+			imem_we <= '0';
+		else
+			dmem_we <= '0';
 			imem_we <= '0';
 		end if;
 			i := i + 1;
