@@ -46,6 +46,8 @@ signal imem_address : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 signal control_target : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal is_branch : std_logic;
 signal branch_prediction : std_logic;
+signal JAL_opcode : std_logic;
+signal branch_opcode : std_logic;
 begin
 
 
@@ -55,33 +57,39 @@ SB_type_imm <= instruction(31) & instruction(7) & instruction(30 downto 25) & in
 UJ_type_imm <= instruction(31) & instruction(19 downto 12) & instruction(20) & instruction(30 downto 21); 
 branch_target_out <= control_target;
 
-combi : process(PC_incr, new_PC, control_transfer, UJ_type_imm, PC_in, imem_we, PC_out, imem_write_address, SB_type_imm, UJ_type_imm, instruction, control_target, branch_prediction, is_branch)
+combi : process(PC_incr, new_PC, control_transfer, UJ_type_imm, PC_in, imem_we, PC_out, imem_write_address, SB_type_imm, UJ_type_imm, instruction, control_target, branch_prediction, is_branch, JAL_opcode)
 
 begin
-
+	if (instruction(6 downto 0) = "1101111") then JAL_opcode <= '1';
+	else JAL_opcode <= '0';
+	end if;
+	
+	if (instruction(6 downto 0) = "1100011") then branch_opcode <= '1';
+	else branch_opcode <= '0';
+	end if;
 	case (imem_we) is
-		when '0' => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH + 1 downto 2);
+		when '0' => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 		when '1' => imem_address <= imem_write_address;
-		when others => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH + 1 downto 2); 
+		when others => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0); 
 	end case;
 	
-	case (instruction(6 downto 0)) is
-		when "1101111" => relevant_imm <= UJ_type_imm;
+	case (JAL_opcode) is
+		when '1' => relevant_imm <= UJ_type_imm;
 		when others => relevant_imm <= std_logic_vector(resize(signed(SB_type_imm), relevant_imm'length));
 	end case;
 end process;
 
 
-PC_input : process(control_transfer, instruction(6 downto 0), branch_prediction, PC_incr, control_target, new_PC)
+PC_input : process(control_transfer, instruction(6 downto 0), branch_prediction, PC_incr, control_target, new_PC, JAL_opcode, branch_opcode)
 
 begin
 	branched <= '0';
 	PC_in <= PC_incr;
 	if(control_transfer = '1') then
 		PC_in <= new_PC;
-	elsif(instruction(6 downto 0) = "1101111") then
+	elsif(JAL_opcode = '1') then
 		PC_in <= control_target;
-	elsif(instruction(6 downto 0) = "1100011" and branch_prediction = '1') then
+	elsif(branch_opcode = '1' and branch_prediction = '1') then
 		PC_in <= control_target;  
 		branched <= '1';
 	end if;
