@@ -20,7 +20,7 @@ package constants is
 	
 	--Other constants--
 	
-	constant INSTRUCTION_MEM_WIDTH : integer := 12;
+	constant INSTRUCTION_MEM_WIDTH : integer := 11;
 	
 	--Immediate constants--
 	
@@ -55,12 +55,12 @@ package constants is
 
 	
 	--data-memory--
-	constant DATA_MEM_WIDTH : integer := 16;
+	constant DATA_MEM_WIDTH : integer := 11;
 	
 	--misc--
 	constant UNKNOWN_32BIT : std_logic_vector(31 downto 0) := "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 	
-	constant PC_WIDTH : integer := 14;
+	constant PC_WIDTH : integer := 11;
 	
 	--branch prediction
 	constant PREDICTION_TABLE_SIZE : integer := 6;
