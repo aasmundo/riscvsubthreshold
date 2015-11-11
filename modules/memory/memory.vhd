@@ -22,7 +22,7 @@ entity memory is
 	branch_target : in std_logic_vector(PC_WIDTH - 1 downto 0);
 	control_transfer : out std_logic;
 	
-	mem_read_out : out std_logic_vector(31 downto 0);
+
 	branched : in std_logic;
 	PC_incr : in std_logic_vector(PC_WIDTH - 1 downto 0);
 	
@@ -33,19 +33,19 @@ entity memory is
 	tb_mem_we : in std_logic;
 	tb_mem_data : in std_logic_vector(31 downto 0);
 	tb_mem_be : in std_logic_vector(1 downto 0);
-	tb_mem_write_addr : in std_logic_vector(DATA_MEM_WIDTH - 1 downto 0)
-
+	tb_mem_write_addr : in std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+	
+	--data memory interface
+	bram_mem_be : out std_logic_vector(1 downto 0);
+	bram_addr : out std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+	bram_we : out std_logic;
+	bram_data_in : out std_logic_vector(31 downto 0)
 	);
 end memory;
 	
 architecture behave of memory is
 signal rs2_data : std_logic_vector(31 downto 0);
 signal branch : std_logic;
-
-signal bram_we : std_logic;
-signal bram_data_in : std_logic_vector(31 downto 0);
-signal bram_addr : std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
-signal bram_mem_be : std_logic_vector(1 downto 0);
 signal incorrect_branch : std_logic;
 signal correct_PC : std_logic_vector(PC_WIDTH - 1 downto 0);
 --pragma synthesis_off
@@ -95,16 +95,7 @@ begin
 	else 				   rs2_data <= rs2_data_ex;
 	end if;
 end process;
-data_memory : entity work.bram generic map(
-address_width => DATA_MEM_WIDTH)
-port map (
-clk => clk,
-byte_enable => bram_mem_be,
-address => bram_addr,
-we => bram_we,
-write_data => bram_data_in,
-read_data => mem_read_out
-);
+
 
 branch_control : entity branch_control port map(
 	ALU_result => ALU_result,

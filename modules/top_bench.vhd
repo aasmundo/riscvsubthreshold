@@ -51,6 +51,18 @@ signal dmem_we : std_logic;
 signal dmem_data : std_logic_vector(31 downto 0);
 signal dmem_write_address : std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
 signal dmem_be : std_logic_vector(1 downto 0);
+
+signal data_memory_address :  std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+signal data_memory_read_data :  std_logic_vector(31 downto 0);
+signal data_memory_be        :  std_logic_vector(1 downto 0);
+signal data_memory_write_data :  std_logic_vector(31 downto 0);
+signal data_memory_write_enable :  std_logic;
+	
+	--instruction memory interface
+signal inst_memory_address :  std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+signal inst_memory_read_data :  std_logic_vector(31 downto 0);
+signal inst_memory_write_data :  std_logic_vector(31 downto 0);
+signal inst_memory_write_enable :  std_logic;
 begin
 clk <= not clk after 1ns;
 dmem_be <= "10";
@@ -65,9 +77,39 @@ design : entity work.top port map
 	dmem_we => dmem_we,
 	dmem_data => dmem_data,
 	dmem_write_address => dmem_write_address,
-	dmem_be => dmem_be
+	dmem_be => dmem_be,
+	data_memory_address	=> data_memory_address,
+	data_memory_read_data => data_memory_read_data,
+	data_memory_be => data_memory_be,
+	data_memory_write_data => data_memory_write_data,
+	data_memory_write_enable => data_memory_write_enable,
+	
+	inst_memory_address => inst_memory_address,
+	inst_memory_read_data => inst_memory_read_data,
+	inst_memory_write_data => inst_memory_write_data,
+	inst_memory_write_enable => inst_memory_write_enable
 	);
 
+instruction_memory : entity work.SP_32bit generic map(
+	address_width => INSTRUCTION_MEM_WIDTH)
+port map(
+	clk => clk,
+	we	=>inst_memory_write_enable,
+	address  =>  inst_memory_address,
+	data_in  => inst_memory_write_data,
+	data_out => inst_memory_read_data
+);
+
+data_memory : entity work.bram generic map(
+	address_width => DATA_MEM_WIDTH)
+port map(
+	clk => clk,
+	byte_enable => data_memory_be,
+	address => data_memory_address,
+	we => data_memory_write_enable,
+	write_data => data_memory_write_data,
+	read_data => data_memory_read_data
+);
 
 
 
@@ -128,7 +170,7 @@ if(clk'event and clk = '1') then
 	if(tests(j)(i) /= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU") then
 		imem_data <= tests(j)(i);
 		dmem_data <= tests(j)(i);
-		if(i < 1000 and (i * 4) < 2**INSTRUCTION_MEM_WIDTH) then
+		if(i < 1000 and (i * 4) < (2**INSTRUCTION_MEM_WIDTH + 64)) then
 			imem_we <= '1';
 			dmem_we <= '0';
 		elsif(i > 1000) then

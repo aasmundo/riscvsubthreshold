@@ -9,8 +9,8 @@ entity instruction_fetch is
 	clk : in std_logic;	
 	nreset : in std_logic;
 	
-	imem_we	: in std_logic;
-	imem_data : in std_logic_vector(31 downto 0);
+	imem_we : in std_logic;
+
 	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	
 	--from other stages
@@ -28,8 +28,12 @@ entity instruction_fetch is
 	PC_incr_out : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	PC_incr_MEM : in std_logic_vector(PC_WIDTH - 1 downto 0);
 	branch_MEM : in std_logic;
-	is_branch_MEM : in std_logic
-	--**--
+	is_branch_MEM : in std_logic;
+	--**-- 
+	
+	--instruction memory interface
+	imem_address : out std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+	instruction  : in std_logic_vector(31 downto 0)
 	
 	);
 end instruction_fetch;
@@ -38,11 +42,9 @@ architecture behave of instruction_fetch is
 signal PC_we : std_logic;
 signal PC_in, PC_out : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal PC_incr : std_logic_vector(PC_WIDTH - 1 downto 0);
-signal instruction : std_logic_vector(31 downto 0);
 signal SB_type_imm : std_logic_vector(11 downto 0);
 signal UJ_type_imm : std_logic_vector(19 downto 0);
 signal relevant_imm : std_logic_vector(19 downto 0);
-signal imem_address : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 signal control_target : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal is_branch : std_logic;
 signal branch_prediction : std_logic;
@@ -132,15 +134,7 @@ branch_predictor : entity work.branch_predictor generic map(
 	is_branch_MEM => is_branch_MEM
 	);
 	
-instruction_memory : entity work.SP_32bit generic map(
-address_width => INSTRUCTION_MEM_WIDTH) 
-port map (
-clk => clk,
-address => imem_address,
-data_in => imem_data,
-data_out => instruction,
-we => imem_we
-);
+
 
 	
 	

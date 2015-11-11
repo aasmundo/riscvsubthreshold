@@ -8,15 +8,33 @@ entity top is
 	port(
 	clk                : in  std_logic;
 	nreset             : in  std_logic;
+	
+	--external instruction memory access
 	imem_we            : in  std_logic;
 	imem_data          : in  std_logic_vector(31 downto 0);
-	imem_write_address : in  std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+	imem_write_address : in  std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0); 
+	
+	
 	instruction        : out std_logic_vector(31 downto 0);
 	
+	--external data memory access
 	dmem_we            : in  std_logic;
 	dmem_data          : in  std_logic_vector(31 downto 0);
 	dmem_write_address : in  std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
-	dmem_be            : in  std_logic_vector(1 downto 0)
+	dmem_be            : in  std_logic_vector(1 downto 0);
+	
+	--data memory interface
+	data_memory_address : out std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+	data_memory_read_data : in std_logic_vector(31 downto 0);
+	data_memory_be        : out std_logic_vector(1 downto 0);
+	data_memory_write_data : out std_logic_vector(31 downto 0);
+	data_memory_write_enable : out std_logic;
+	
+	--instruction memory interface
+	inst_memory_address : out std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+	inst_memory_read_data : in std_logic_vector(31 downto 0);
+	inst_memory_write_data : out std_logic_vector(31 downto 0);
+	inst_memory_write_enable : out std_logic
 	);
 end top;
 
@@ -158,23 +176,27 @@ flush_IDEX <= control_transfer_MEM or stall or not nreset;
 flush_EXMEM <= control_transfer_MEM or not nreset;
 flush_MEMWB <= not nreset;
 
+inst_memory_write_enable <= imem_we;
+inst_memory_write_data   <= imem_data;
+
 instruction_fetch : entity work.instruction_fetch port map(
     clk                 => clk,
     nreset              => nreset,
     control_transfer    => control_transfer_MEM,
     new_PC              => new_PC_MEM,
     branch_target_out   => branch_target_IF,
+	imem_we             => imem_we,
+	imem_write_address  => imem_write_address,
     stall               => stall_IF,
     instruction_o       => instruction_IF,
-    imem_data           => imem_data,
-    imem_we             => imem_we,
-    imem_write_address  => imem_write_address,
     current_PC          => current_PC_IF,
     PC_incr_out         => PC_incr_IF,
     branched            => branched_IF,
     PC_incr_MEM         => PC_incr_EXMEM,
     branch_MEM          => branch_MEM,
-	is_branch_MEM       => is_branch_EXMEM
+	is_branch_MEM       => is_branch_EXMEM,
+	instruction         => inst_memory_read_data,
+	imem_address        => inst_memory_address
 	);
 	
 IFID_pipline_register : entity work.IFID_preg port map(
@@ -330,7 +352,6 @@ memory : entity work.memory port map(
     rs2_src             => mem_rs2_src_EX,
     mem_write_width     => mem_be_EXMEM,
     mem_we              => mem_we_EXMEM,
-    mem_read_out        => mem_read_MEM,
     funct3              => funct3_EXMEM,
     control_transfer    => control_transfer_MEM,
     branch_target       => branch_target_EXMEM,
@@ -343,13 +364,17 @@ memory : entity work.memory port map(
     tb_mem_be           => dmem_be,
     PC_incr             => PC_incr_EXMEM,
     branched            => branched_EXMEM,
-	branch_out          => branch_MEM
+	branch_out          => branch_MEM,
+	bram_mem_be         => data_memory_be,
+	bram_addr           => data_memory_address,
+	bram_we             => data_memory_write_enable,
+	bram_data_in        => data_memory_write_data
 	);
 
 MEMWB_pipeline_registers : entity work.MEMWB_preg port map(
     clk                 => clk,
     flush               => flush_MEMWB,
-    mem_read_data_in    => mem_read_MEM,
+    mem_read_data_in    => data_memory_read_data,
     mem_read_data_out   => mem_read_MEMWB,
     ALU_data_in         => ALU_result_EXMEM,
     ALU_data_out        => ALU_result_MEMWB,
