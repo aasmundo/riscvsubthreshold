@@ -50,7 +50,7 @@ signal incorrect_branch : std_logic;
 signal correct_PC : std_logic_vector(PC_WIDTH - 1 downto 0);
 --pragma synthesis_off
 --performance counter
-signal branches, is_branches, wrong_predictions : integer := 0;
+signal branches, is_branches, wrong_predictions, prediction_rate : integer := 0;
 --pragma synthesis_on
 begin 
 --pragma synthesis_off	
@@ -66,6 +66,7 @@ begin
 		if(incorrect_branch = '1') then
 			wrong_predictions <= wrong_predictions + 1;
 		end if;
+		prediction_rate <= (10000 * wrong_predictions) / (is_branches + 1);
 	end if;
 end process;
 --pragma synthesis_on
@@ -97,7 +98,7 @@ begin
 end process;
 
 
-branch_control : entity branch_control port map(
+branch_control : entity work.branch_control port map(
 	ALU_result => ALU_result,
 	is_branch => is_branch,
 	funct3 => funct3,
