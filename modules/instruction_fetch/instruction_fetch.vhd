@@ -122,6 +122,9 @@ boj_target_adder : entity work.branch_target_adder port map(
 	imm => relevant_imm
 	);
 	
+--branch_predictor : entity work.two_level_bp generic map(
+	--prediction_window => PREDICTION_TABLE_SIZE,
+	--prediction_history => 4) 
 branch_predictor : entity work.branch_predictor generic map(
 	prediction_window => PREDICTION_TABLE_SIZE)
 	port map(
