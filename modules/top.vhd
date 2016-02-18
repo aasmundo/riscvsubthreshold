@@ -16,8 +16,9 @@ entity top is
 	imem_data          : in  std_logic_vector(31 downto 0);
 	imem_write_address : in  std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0); 
 	
-	
-	instruction        : out std_logic_vector(31 downto 0);
+	--test interface
+	pass        	   : out std_logic;
+	fail               : out std_logic;
 	
 	--external data memory access
 	dmem_we            : in  std_logic;
@@ -177,8 +178,7 @@ begin
 end process;
 --pragma synthesis_on	
 
-counter_enable <= not sleep;
-instruction <= instruction_IFID;	
+counter_enable <= not sleep;	
 stall <= (sleep or stall_ID) and nreset;
 stall_IF <= stall and not control_transfer_MEM;
 flush_IFID <= control_transfer_MEM or not nreset;
@@ -420,6 +420,16 @@ counter : entity work.clock_counter port map(
 	cnt    => clock_count
 	);
 	
-
+test_process : process(instruction_IFID) is
+begin
+	pass <= '0';
+	fail <= '0';
+	if(instruction_IFID = x"0040006f") then	 
+		pass <= '1';
+	end if;
+	if(instruction_IFID = x"0100006f") then	 
+		fail <= '1';
+	end if;		
+end process;
 	
 end behave;
