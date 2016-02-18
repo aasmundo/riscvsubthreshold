@@ -44,12 +44,10 @@ end instruction_decode;
 
 
 architecture behave of instruction_decode is
-signal opcode   : std_logic_vector(6 downto 0);
 signal alu_decode_helper : std_logic_vector(10 downto 0);
 signal is_immediate : std_logic;
 begin
 
-opcode <= instr(6 downto 0);
 
 rd <= instr(11 downto 7); 
 rs1 <= instr(19 downto 15);
@@ -79,8 +77,7 @@ register_file : entity work.register_file port map
 	
 control : entity work.control port map
 	(
-		opcode => opcode,
-		funct3 => instr(14 downto 12),
+		instruction => instr,
 		wb_we => wb_we,	
 		wb_src => wb_src,
 		mem_we => mem_we,

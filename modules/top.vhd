@@ -9,6 +9,8 @@ entity top is
 	clk                : in  std_logic;
 	nreset             : in  std_logic;
 	
+	sleep              : in  std_logic;
+	
 	--external instruction memory access
 	imem_we            : in  std_logic;
 	imem_data          : in  std_logic_vector(31 downto 0);
@@ -140,12 +142,15 @@ signal mem_load_unsigned_MEMWB : std_logic;
 signal mem_load_width_MEMWB : std_logic_vector(1 downto 0);
 signal PC_incr_MEMWB  : std_logic_vector(PC_WIDTH - 1 downto 0);
 --Write back
-signal wb_data_WB : std_logic_vector(31 downto 0);
+signal wb_data_WB : std_logic_vector(31 downto 0); 
+signal counter_enable : std_logic; 
+signal clock_count : std_logic_vector(63 downto 0);
 --pragma synthesis_off
 --performance counters
 signal clocks_since_reset : integer := 0;
 signal stalls : integer := 0;
 signal control_transfers : integer := 0;
+signal stall_and_flush : integer := 0;
 --pragma synthesis_on
 begin
 --pragma synthesis_off
@@ -157,19 +162,24 @@ begin
 		end if;
 		if(control_transfer_MEM = '1') then
 			control_transfers <= control_transfers + 1;
+		end if;	   
+		if(stall_IF = '1' and control_transfer_MEM = '1') then
+			stall_and_flush <= stall_and_flush + 1;
 		end if;
 		clocks_since_reset <= clocks_since_reset + 1;
 	elsif(nreset = '0') then
 		clocks_since_reset <= 0;
 		stalls <= 0;
 		control_transfers <= 0;
+		stall_and_flush <= 0;
 	end if;
 	
 end process;
 --pragma synthesis_on	
-	
+
+counter_enable <= not sleep;
 instruction <= instruction_IFID;	
-stall <= stall_ID and nreset;
+stall <= (sleep or stall_ID) and nreset;
 stall_IF <= stall and not control_transfer_MEM;
 flush_IFID <= control_transfer_MEM or not nreset;
 flush_IDEX <= control_transfer_MEM or stall or not nreset;
@@ -399,7 +409,15 @@ write_back : entity work.write_back port map(
     wb_data             => wb_data_WB,
     mem_load_width      => mem_load_width_MEMWB,
     mem_load_unsigned   => mem_load_unsigned_MEMWB,
-	PC_incr             => PC_incr_MEMWB
+	PC_incr             => PC_incr_MEMWB,
+	clock_count         => clock_count
+	);
+	
+counter : entity work.clock_counter port map(
+	clk => clk,
+	cnt_en => counter_enable,
+	nreset => nreset,
+	cnt    => clock_count
 	);
 	
 

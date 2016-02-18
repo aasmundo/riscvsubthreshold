@@ -12,7 +12,8 @@ entity write_back is
 	wb_data : out std_logic_vector(31 downto 0);
 	mem_load_width : in std_logic_vector(1 downto 0);
 	mem_load_unsigned : in std_logic;
-	PC_incr : in std_logic_vector(PC_WIDTH -1 downto 0)
+	PC_incr : in std_logic_vector(PC_WIDTH -1 downto 0);
+	clock_count : in std_logic_vector(63 downto 0)
 	);
 end write_back;	  
 
@@ -22,6 +23,8 @@ signal sign_ext_helper : std_logic_vector(2 downto 0);
 begin
 
 
+
+	
 combi : process(wb_src, mem_data, ALU_data, mem_data_ext, mem_load_unsigned, mem_load_width, sign_ext_helper, PC_incr) 
 begin
 	sign_ext_helper <= mem_load_unsigned & mem_load_width;
@@ -38,6 +41,7 @@ begin
 		when "00" => wb_data <= ALU_data;
 		when "01" => wb_data <= mem_data_ext;
 		when "10" => wb_data <= std_logic_vector(resize(unsigned(PC_incr), wb_data'length));
+		when "11" => wb_data <= clock_count(31 downto 0);
 		when others => wb_data <= ALU_data;
 	end case;
 	

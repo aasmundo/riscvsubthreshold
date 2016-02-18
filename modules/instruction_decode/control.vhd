@@ -3,9 +3,8 @@ use ieee.std_logic_1164.all;
 
 entity control is
 	port(
-	opcode : in std_logic_vector(6 downto 0);
-	funct3 : in std_logic_vector(2 downto 0);
 	
+	instruction : in std_logic_vector(31 downto 0);
 	--control signals:
 	wb_src : out std_logic_vector(1 downto 0);
 	wb_we : out std_logic;
@@ -20,10 +19,14 @@ end control;
 
 
 architecture behave of control is
-
+signal opcode : std_logic_vector(6 downto 0);
+signal funct3 : std_logic_vector(2 downto 0);
 begin
-	
-control_process: process(opcode, funct3)
+
+opcode <= instruction(6 downto 0);	
+funct3 <= instruction(14 downto 12);
+
+control_process: process(opcode, funct3, instruction)
 
 begin
 	wb_src <= "00";
@@ -53,6 +56,11 @@ begin
 						              wb_we     <= '1';
 		                              wb_src    <= "10";
 									  is_jump   <= '1';
+		when "1110011" =>			  
+								    if(instruction(31 downto 12) = "11000000000000000010") then
+									  wb_we     <= '1';
+									end if;
+									  wb_src    <= "11";
 		when others    => NULL;
 	end case;
 	
