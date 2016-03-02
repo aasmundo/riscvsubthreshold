@@ -21,21 +21,25 @@ type ram_t is array(0 to (2**address_width) - 1) of std_logic_vector(7 downto 0)
 signal ram : ram_t := (others => (others => 'U'));
 begin
 	
-seq : process(clk, we, address, byte_enable)
+seq : process(clk)
 begin
 	if(clk'event and clk = '1') then
 		if(we = '1') then
+			assert (write_data(7 downto 0) /= "UUUUUUUU") report "unknown write data bram" severity failure;
 			case (byte_enable) is
 				when "00" =>
 					ram(to_integer(unsigned(address)))     <= write_data(7 downto 0);
 				when "01" => 
 					ram(to_integer(unsigned(address)))     <= write_data(7 downto 0);
 					ram(to_integer(unsigned(address) + 1)) <= write_data(15 downto 8);
+					assert (write_data(15 downto 7) /= "UUUUUUUU") report "unknown write data bram" severity failure;
 				when others =>
 					ram(to_integer(unsigned(address)))     <= write_data(7 downto 0);
 					ram(to_integer(unsigned(address) + 1)) <= write_data(15 downto 8);
 					ram(to_integer(unsigned(address) + 2)) <= write_data(23 downto 16);
 					ram(to_integer(unsigned(address) + 3)) <= write_data(31 downto 24);
+					assert (write_data(15 downto 7) /= "UUUUUUUU") report "unknown write data bram" severity failure;
+					assert (write_data(31 downto 15) /= "UUUUUUUU") report "unknown write data bram" severity failure;
 			end case;
 		end if;
 		
