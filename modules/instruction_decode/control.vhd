@@ -59,8 +59,9 @@ begin
 		when "1110011" =>			  
 								    if(instruction(31 downto 12) = "11000000000000000010") then
 									  wb_we     <= '1';
-									end if;
 									  wb_src    <= "11";
+									end if;
+									
 		when others    => NULL;
 	end case;
 	
