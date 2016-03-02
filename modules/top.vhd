@@ -44,7 +44,7 @@ end top;
 
 architecture behave of top is
 signal stall : std_logic;
-
+signal init_sleep : std_logic;
 
 --Instruction fetch
 signal branch_target_IF : std_logic_vector(PC_WIDTH - 1 downto 0);
@@ -145,15 +145,22 @@ signal PC_incr_MEMWB  : std_logic_vector(PC_WIDTH - 1 downto 0);
 --Write back
 signal wb_data_WB : std_logic_vector(31 downto 0); 
 signal counter_enable : std_logic; 
-signal clock_count : std_logic_vector(63 downto 0);
+signal clock_count : std_logic_vector(63 downto 0);	  
+
+
+
 --pragma synthesis_off
 --performance counters
 signal clocks_since_reset : integer := 0;
 signal stalls : integer := 0;
 signal control_transfers : integer := 0;
 signal stall_and_flush : integer := 0;
---pragma synthesis_on
+--pragma synthesis_on 
+
 begin
+	
+	
+	
 --pragma synthesis_off
 performance : process(clk, nreset)
 begin 
@@ -176,15 +183,8 @@ begin
 	end if;
 	
 end process;
---pragma synthesis_on	
+--pragma synthesis_on
 
-counter_enable <= not sleep;	
-stall <= (sleep or stall_ID) and nreset;
-stall_IF <= stall and not control_transfer_MEM;
-flush_IFID <= control_transfer_MEM or not nreset;
-flush_IDEX <= control_transfer_MEM or stall or not nreset;
-flush_EXMEM <= control_transfer_MEM or not nreset;
-flush_MEMWB <= not nreset;
 
 inst_memory_write_enable <= imem_we;
 inst_memory_write_data   <= imem_data;
@@ -206,7 +206,8 @@ instruction_fetch : entity work.instruction_fetch port map(
     branch_MEM          => branch_MEM,
 	is_branch_MEM       => is_branch_EXMEM,
 	instruction         => inst_memory_read_data,
-	imem_address        => inst_memory_address
+	imem_address        => inst_memory_address,
+	init_sleep          => init_sleep
 	);
 	
 IFID_pipline_register : entity work.IFID_preg port map(
@@ -419,6 +420,23 @@ counter : entity work.clock_counter port map(
 	nreset => nreset,
 	cnt    => clock_count
 	);
+
+activity_control : entity work.activity_control port map(
+	clk => clk,	
+	sleep => sleep,
+	stall_ID => stall_ID,  
+	nreset => nreset,
+	control_transfer_MEM => control_transfer_MEM,
+	init_sleep => init_sleep,
+	counter_enable => counter_enable,		   
+	stall_IF => stall_IF,
+	stall => stall,
+	flush_IFID => flush_IFID,
+	flush_IDEX => flush_IDEX,
+	flush_EXMEM => flush_EXMEM,
+	flush_MEMWB => flush_MEMWB	
+	);
+	
 	
 test_process : process(instruction_IFID) is
 begin
