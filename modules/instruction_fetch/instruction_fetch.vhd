@@ -13,6 +13,8 @@ entity instruction_fetch is
 
 	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	
+	init_sleep : in std_logic;
+	
 	--from other stages
 	control_transfer : in std_logic;
 	new_PC : in std_logic_vector(PC_WIDTH - 1 downto 0);
@@ -82,13 +84,15 @@ begin
 end process;
 
 
-PC_input : process(control_transfer, instruction(6 downto 0), branch_prediction, PC_incr, control_target, new_PC, JAL_opcode, branch_opcode)
+PC_input : process(control_transfer, instruction(6 downto 0), branch_prediction, PC_incr, control_target, new_PC, JAL_opcode, branch_opcode, PC_incr_MEM, init_sleep)
 
 begin
 	branched <= '0';
 	PC_in <= PC_incr;
 	if(control_transfer = '1') then
 		PC_in <= new_PC;
+	elsif(init_sleep = '1') then
+		PC_in <= PC_incr_MEM;
 	elsif(JAL_opcode = '1') then
 		PC_in <= control_target;
 	elsif(branch_opcode = '1' and branch_prediction = '1') then
@@ -122,16 +126,16 @@ boj_target_adder : entity work.branch_target_adder port map(
 	imm => relevant_imm
 	);
 	
---branch_predictor : entity work.two_level_bp generic map(
-	--prediction_window => PREDICTION_TABLE_SIZE,
-	--prediction_history => 4) 
-branch_predictor : entity work.branch_predictor generic map(
-	prediction_window => PREDICTION_TABLE_SIZE)
+branch_predictor : entity work.bp_top generic map(
+	prediction_window => 4,
+	prediction_history => 4) 
+--branch_predictor : entity work.branch_predictor generic map(
+	--prediction_window => PREDICTION_TABLE_SIZE)
 	port map(
 	clk => clk,
 	nreset => nreset,
-	PC_incr_IF => PC_incr(PREDICTION_TABLE_SIZE + 1 downto 2),
-	PC_incr_MEM => PC_incr_MEM(PREDICTION_TABLE_SIZE + 1 downto 2),
+	PC_incr_IF => PC_incr(PC_WIDTH - 1 downto 2),
+	PC_incr_MEM => PC_incr_MEM(PC_WIDTH - 1 downto 2),
 	prediction => branch_prediction,
 	branch_MEM => branch_MEM,
 	is_branch_MEM => is_branch_MEM
