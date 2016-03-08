@@ -35,6 +35,7 @@ type state_t is (STARTUP_WAIT, WRITE_SETTINGS_1, WRITE_INSTR_ADDRESS_START, WRIT
 				 WRITE_SETTINGS_2, RECV_DATA_START, RECV_DATA_WAIT, IDLE);
 signal state, n_state : state_t;
 signal word_cnt, n_word_cnt : unsigned(10 downto 0);
+signal n_we : std_logic;
 begin
 
 data_mem <= data_from_spi;
@@ -50,6 +51,7 @@ begin
 	n_state <= state;
 	done <= '0';
 	spi_clear <= '0';
+	n_we <= '0';
 	case (state) is
 		when STARTUP_WAIT =>
 			n_word_cnt <= word_cnt + 1;
@@ -78,6 +80,7 @@ begin
 		when RECV_DATA_WAIT =>
 			if(spi_finished = '1') then
 				n_word_cnt <= word_cnt + 1;
+				n_we <= '1';
 				if(word_cnt = "1000000000") then 
 					n_state <= IDLE;
 					spi_clear <= '1';
@@ -85,7 +88,6 @@ begin
 					spi_start <= '1';
 				end if; 
 			end if;
-			we <= spi_finished;
 		when IDLE =>
 			done <= '1';
 		when others =>
@@ -100,9 +102,11 @@ begin
 		if(nreset = '0') then
 			word_cnt <= (others => '0');
 			state <= STARTUP_WAIT;
+			we <= '0';
 		else
 			state <= n_state;
 			word_cnt <= n_word_cnt;
+			we <= n_we;
 		end if;
 	end if;
 end process;
