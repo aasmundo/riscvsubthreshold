@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use IEEE.numeric_std.all;
 library work;
 use work.constants.all;
 
@@ -65,6 +66,7 @@ begin
 			rd_out <= "00000";
 			rs2_adr_out <= "00000";
 			branched_out <= '0';
+			PC_incr_out <= std_logic_vector(to_unsigned(512,PC_WIDTH));
 		else
 			branched_out <= branched_in;
 			rd_we_out <= rd_we_in;
@@ -72,7 +74,8 @@ begin
 			is_branch_out <= is_branch_in;
 			is_jump_out <= is_jump_in;
 			rd_out <= rd_in;
-			rs2_adr_out <= rs2_adr_in;
+			rs2_adr_out <= rs2_adr_in;	
+			PC_incr_out <= PC_incr_in;
 		end if;					  
 		ALU_result_out <= ALU_result_in;
 		rs2_data_out <= rs2_data_in;  
@@ -80,7 +83,6 @@ begin
 		mem_write_width_out <= mem_write_width_in;
 		mem_load_unsigned_out <= mem_load_unsigned_in;
 		branch_target_out <= branch_target_in;
-		PC_incr_out <= PC_incr_in;
 	end if;
 end process;
 end behave;

@@ -29,11 +29,6 @@ entity memory is
 	--branch_prediction
 	branch_out : out std_logic;
 	
-	--testbench input
-	tb_mem_we : in std_logic;
-	tb_mem_data : in std_logic_vector(31 downto 0);
-	tb_mem_be : in std_logic_vector(1 downto 0);
-	tb_mem_write_addr : in std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
 	
 	--data memory interface
 	bram_mem_be : out std_logic_vector(1 downto 0);
@@ -73,20 +68,11 @@ end process;
 --branch predictor output
 branch_out <= branch;
 
-data_mem_input : process(tb_mem_we, tb_mem_data, tb_mem_be, tb_mem_write_addr, mem_write_width, ALU_result, mem_we, rs2_data)
-begin
-	if(tb_mem_we = '0') then
-		 bram_mem_be <= mem_write_width;
-		 bram_addr <= ALU_result(DATA_MEM_WIDTH - 1 downto 0);
-   	   	 bram_we <= mem_we;
-		 bram_data_in <= rs2_data; 
-	else
-		 bram_mem_be <= tb_mem_be;
-		 bram_addr <= tb_mem_write_addr;
-   	   	 bram_we <= tb_mem_we;
-		 bram_data_in <= tb_mem_data;
-	end if;
-end process;
+
+bram_mem_be <= mem_write_width;
+bram_addr <= ALU_result(DATA_MEM_WIDTH - 1 downto 0);
+bram_we <= mem_we;
+bram_data_in <= rs2_data; 
 	
 	
 	
