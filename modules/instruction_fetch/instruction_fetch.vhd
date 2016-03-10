@@ -9,11 +9,9 @@ entity instruction_fetch is
 	clk : in std_logic;	
 	nreset : in std_logic;
 	
-	imem_we : in std_logic;
-
-	imem_write_address : in std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	
 	init_sleep : in std_logic;
+	sleep      : in std_logic;
 	
 	--from other stages
 	control_transfer : in std_logic;
@@ -60,8 +58,9 @@ current_PC <= PC_out;
 SB_type_imm <= instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8);
 UJ_type_imm <= instruction(31) & instruction(19 downto 12) & instruction(20) & instruction(30 downto 21); 
 branch_target_out <= control_target;
+imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 
-combi : process(PC_incr, new_PC, control_transfer, UJ_type_imm, PC_in, imem_we, PC_out, imem_write_address, SB_type_imm, UJ_type_imm, instruction, control_target, branch_prediction, is_branch, JAL_opcode)
+combi : process(PC_incr, new_PC, control_transfer, UJ_type_imm, PC_in, PC_out, SB_type_imm, UJ_type_imm, instruction, control_target, branch_prediction, is_branch, JAL_opcode)
 
 begin
 	if (instruction(6 downto 0) = "1101111") then JAL_opcode <= '1';
@@ -71,11 +70,7 @@ begin
 	if (instruction(6 downto 0) = "1100011") then branch_opcode <= '1';
 	else branch_opcode <= '0';
 	end if;
-	case (imem_we) is
-		when '0' => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0);
-		when '1' => imem_address <= imem_write_address;
-		when others => imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0); 
-	end case;
+
 	
 	case (JAL_opcode) is
 		when '1' => relevant_imm <= UJ_type_imm;
@@ -104,7 +99,8 @@ end process;
 
 
 	
-PC_we <= not stall;
+PC_we <= (not (stall or sleep)) or init_sleep;
+
 instruction_o <= instruction;
 
 PC : entity work.PC port map(

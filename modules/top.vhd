@@ -11,21 +11,10 @@ entity top is
 	
 	sleep              : in  std_logic;
 	
-	--external instruction memory access
-	imem_we            : in  std_logic;
-	imem_data          : in  std_logic_vector(31 downto 0);
-	imem_write_address : in  std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0); 
-	
 	--test interface
 	pass        	   : out std_logic;
 	fail               : out std_logic;
-	
-	--external data memory access
-	dmem_we            : in  std_logic;
-	dmem_data          : in  std_logic_vector(31 downto 0);
-	dmem_write_address : in  std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
-	dmem_be            : in  std_logic_vector(1 downto 0);
-	
+
 	--data memory interface
 	data_memory_address : out std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
 	data_memory_read_data : in std_logic_vector(31 downto 0);
@@ -36,7 +25,6 @@ entity top is
 	--instruction memory interface
 	inst_memory_address : out std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	inst_memory_read_data : in std_logic_vector(31 downto 0);
-	inst_memory_write_data : out std_logic_vector(31 downto 0);
 	inst_memory_write_enable : out std_logic
 	);
 end top;
@@ -186,8 +174,7 @@ end process;
 --pragma synthesis_on
 
 
-inst_memory_write_enable <= imem_we;
-inst_memory_write_data   <= imem_data;
+inst_memory_write_enable <= '0';
 
 instruction_fetch : entity work.instruction_fetch port map(
     clk                 => clk,
@@ -195,8 +182,6 @@ instruction_fetch : entity work.instruction_fetch port map(
     control_transfer    => control_transfer_MEM,
     new_PC              => new_PC_MEM,
     branch_target_out   => branch_target_IF,
-	imem_we             => imem_we,
-	imem_write_address  => imem_write_address,
     stall               => stall_IF,
     instruction_o       => instruction_IF,
     current_PC          => current_PC_IF,
@@ -207,7 +192,8 @@ instruction_fetch : entity work.instruction_fetch port map(
 	is_branch_MEM       => is_branch_EXMEM,
 	instruction         => inst_memory_read_data,
 	imem_address        => inst_memory_address,
-	init_sleep          => init_sleep
+	init_sleep          => init_sleep,
+	sleep               => sleep
 	);
 	
 IFID_pipline_register : entity work.IFID_preg port map(
@@ -369,10 +355,6 @@ memory : entity work.memory port map(
     new_PC              => new_PC_MEM,
     is_branch           => is_branch_EXMEM,
     is_jump             => is_jump_EXMEM,
-    tb_mem_we           => dmem_we,
-    tb_mem_data         => dmem_data,
-    tb_mem_write_addr   => dmem_write_address,
-    tb_mem_be           => dmem_be,
     PC_incr             => PC_incr_EXMEM,
     branched            => branched_EXMEM,
 	branch_out          => branch_MEM,
