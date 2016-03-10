@@ -10,6 +10,9 @@ entity soc_top is
 	port(
 	clk       : in std_logic;
 	nreset    : in std_logic;
+	--testbench
+	pass      : out std_logic;
+	fail      : out std_logic;
 	--spi--
 	sclk      : out std_logic;
 	miso      : in  std_logic;
@@ -44,7 +47,7 @@ signal startup_done		: std_logic;
 signal d_clk            : std_logic; 
 signal clk_reset, 
 reset_last   : std_logic;
-
+signal sync_reset : std_logic;
 --memory
 signal instr_we         : std_logic;
 signal instr_data_w		: std_logic_vector(31 downto 0);
@@ -77,22 +80,37 @@ signal cpu_data_addr        : std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
 signal cpu_data_be          : std_logic_vector(1 downto 0);
 signal cpu_data_re          : std_logic;
 
-begin
 
-clk_reset <= not (reset_last and not nreset);	
+--CPU
+signal cpu_sleep : std_logic;
+
+begin
+cpu_sleep <= not startup_done;
+	
+	
+clk_reset <= not (reset_last and not nreset);
+
 	
 clk_reset_process : process(clk)
 begin	
 	if(clk'event and clk = '1') then
 		reset_last <= nreset;	
 	end if;
-end process;  
+end process;
+
+
+sync_reset_process : process(d_clk)
+begin
+	if(d_clk'event and d_clk = '1') then
+		sync_reset <= nreset;	
+	end if;
+end process;
 
 
 startup_instr_addr <= startup_address(DATA_MEM_WIDTH - 3 downto 0) & "00";
 startup_data_addr  <= startup_address(DATA_MEM_WIDTH - 3 downto 0) & "00";
 startup_instr_we   <= startup_we and not startup_address(DATA_MEM_WIDTH - 2);
-startup_data_we    <= startup_we and startup_address(DATA_MEM_WIDTH - 2);
+startup_data_we	<= startup_we;
 
 memory_control_selector : process(startup_done, startup_instr_addr, 
 startup_data_addr, startup_instr_we, startup_data_we, startup_data_mem, 
@@ -126,8 +144,8 @@ begin
 end process;
 	
 spi_controller : entity work.SPI_controller port map(
-	clk        => clk,
-	nreset     => nreset,
+	clk        => d_clk,
+	nreset     => sync_reset,
 	request    => spi_settings,
 	data_in    => spi_data_in,
 	data_out   => spi_data_out,
@@ -149,7 +167,7 @@ spi_controller : entity work.SPI_controller port map(
 
 startup_controller : entity work.spi_startup port map(
 	clk        => d_clk,
-	nreset     => nreset,
+	nreset     => sync_reset,
 	
 	--SPI controller interface--
 	data_to_spi => spi_data_in,
@@ -171,7 +189,7 @@ startup_controller : entity work.spi_startup port map(
 
 
 clock_divider : entity work.clock_divider generic map(
-	division => 3
+	division => 4
 	)	
 	port map(
 	clk => clk,
@@ -199,6 +217,33 @@ port map(
 	write_data => data_data_w,
 	read_data => data_data_r
 );	
-	
 
+
+AAsmund_RISC : entity work.top	port map
+	(
+	clk => d_clk,
+	nreset => sync_reset,
+	
+	sleep => cpu_sleep,
+	
+	--test interface
+	pass  => pass,
+	fail  => fail,
+
+	--data memory interface
+	data_memory_address      => cpu_data_addr,
+	data_memory_read_data    =>	data_data_r, 
+	data_memory_be           =>	cpu_data_be,
+	data_memory_write_data   => cpu_data_data_w,
+	data_memory_write_enable => cpu_data_we, 
+	
+	--instruction memory interface
+	inst_memory_address => cpu_instr_addr,
+	inst_memory_read_data => instr_data_r,
+	inst_memory_write_enable => cpu_instr_we
+	);
+
+cpu_instr_data_w <= x"00000000";
+cpu_data_re <= '1'; --TODO: Implement read enable signal
+cpu_instr_re <= '1'; --TODO: Implement read enable signal
 end behave;
