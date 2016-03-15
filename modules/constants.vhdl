@@ -63,7 +63,7 @@ package constants is
 	constant PC_WIDTH : integer := 11;
 	
 	--branch prediction
-	constant PREDICTION_TABLE_SIZE : integer :=6;
+	constant PREDICTION_TABLE_SIZE : integer :=4;
 
 	
 
