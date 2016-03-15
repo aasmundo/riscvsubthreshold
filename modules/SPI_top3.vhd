@@ -31,8 +31,8 @@ begin
 
 sclk <= sclk_i;
 data_out <= regs;
-mosi <= regs(0);
-regs_shifted <= miso & regs(7 downto 1);
+mosi <= regs(7);
+regs_shifted <= regs(6 downto 0) & miso;
 
 state_combi : process(counter, state, regs_shifted, data_in, reg_src, start)
 
@@ -52,7 +52,7 @@ begin
 		when ONE =>
 			n_sclk <= '1';
 			n_state <= TWO;
-			n_counter <= counter + 1;
+			n_counter <= counter + 1; 
 			reg_we <= '1';
 		when TWO =>
 			n_sclk <= '1';
@@ -65,6 +65,7 @@ begin
 			n_state <= FOUR;
 		when FOUR => 
 			n_state <= ONE;
+
 		when FIN =>
 			byte_complete <= '1';
 			n_state <= IDLE;
