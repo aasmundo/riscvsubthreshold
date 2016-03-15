@@ -48,7 +48,8 @@ begin
 				n_state <= ONE;
 				reg_src <= '1';
 				reg_we <= '1';
-			end if;
+			end if;	
+			n_state <= IDLE;
 		when ONE =>
 			n_sclk <= '1';
 			n_state <= TWO;
