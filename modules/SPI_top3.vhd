@@ -42,6 +42,7 @@ begin
 	n_sclk <= '0';
 	reg_we <= '0';
 	byte_complete <= '0';
+	n_state <= state;
 	case (state) is
 		when IDLE =>
 			if(start = '1') then
@@ -49,7 +50,6 @@ begin
 				reg_src <= '1';
 				reg_we <= '1';
 			end if;	
-			n_state <= IDLE;
 		when ONE =>
 			n_sclk <= '1';
 			n_state <= TWO;
