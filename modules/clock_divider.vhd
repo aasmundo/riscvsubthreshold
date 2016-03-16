@@ -26,7 +26,7 @@ begin
 		process(clk_lvls(i), clk_lvls(i - 1), nreset) 
 		begin
 			if(nreset = '0') then
-				clk_lvls(i) <= '0';
+				clk_lvls(i) <= '1';	 --reset to 1 because limitation of library
 			elsif(clk_lvls(i - 1)'event and clk_lvls(i - 1) = '1') then
 				clk_lvls(i) <= not clk_lvls(i);	
 			end if;
