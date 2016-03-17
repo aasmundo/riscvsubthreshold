@@ -28,8 +28,9 @@ end entity;
 
 
 architecture behave of soc_top is
-component SP_32bit generic(
-        address_width : integer )
+component SP_32bit 
+generic(
+        address_width : integer );
 port(
         clk : in std_logic;
         we  : in std_logic;
@@ -38,12 +39,13 @@ port(
         data_out : out std_logic_vector(31 downto 0)
 );
 end component;
-component bram generic (
-        address_width : integer)
+component bram 
+generic (
+        address_width : integer);
 port(
         clk : in std_logic;
         byte_enable : in std_logic_vector(1 downto 0);
-        address : in std_logic;
+        address : in std_logic_vector(address_width - 1 downto 0);
         we : in std_logic;
         write_data : in std_logic_vector(31 downto 0);
         read_data : out std_logic_vector(31 downto 0)
@@ -217,7 +219,7 @@ clock_divider : entity work.clock_divider generic map(
 	d_clk => d_clk	
 	);
 
-instruction_memory : entity work.SP_32bit generic map(
+instruction_memory : SP_32bit generic map(
 	address_width => INSTRUCTION_MEM_WIDTH)
 port map(
 	clk => d_clk,
@@ -227,7 +229,7 @@ port map(
 	data_out => instr_data_r
 );
 
-data_memory : entity work.bram generic map(
+data_memory : bram generic map(
 	address_width => DATA_MEM_WIDTH)
 port map(
 	clk => d_clk,
