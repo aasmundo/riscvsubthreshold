@@ -210,7 +210,7 @@ startup_controller : entity work.spi_startup port map(
 );
 
 
-clock_divider : entity work.clock_divider generic map(
+clock_divider : entity work.clock_divider_cnt generic map(
 	division => 4
 	)	
 	port map(
