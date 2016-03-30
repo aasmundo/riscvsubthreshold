@@ -27,7 +27,10 @@ end entity;
 
 
 
-architecture behave of soc_top is
+architecture behave of soc_top is 
+--test interface
+signal pass_i, pass_i_reg : std_logic;
+signal fail_i, fail_i_reg : std_logic;
 
 --SPI and startup
 signal spi_settings     :  std_logic;
@@ -85,7 +88,10 @@ signal cpu_data_re          : std_logic;
 signal cpu_sleep : std_logic;
 
 begin
-cpu_sleep <= not startup_done;
+pass <= pass_i_reg;
+fail <= fail_i_reg;
+	
+cpu_sleep <= (not startup_done) or (pass_i_reg or fail_i_reg);
 	
 	
 clk_reset <= not (reset_last and not nreset);
@@ -104,8 +110,20 @@ begin
 	if(d_clk'event and d_clk = '1') then
 		sync_reset <= nreset;	
 	end if;
-end process;
+end process; 
 
+test_process : process(d_clk)
+begin
+	if(d_clk'event and d_clk = '1') then
+		if(nreset = '0') then
+			pass_i_reg <= '0';
+			fail_i_reg <= '0';
+		else
+			pass_i_reg <= pass_i;
+			fail_i_reg <= fail_i;
+		end if;
+	end if;	
+end process;
 
 startup_instr_addr <= startup_address(DATA_MEM_WIDTH - 3 downto 0) & "00";
 startup_data_addr  <= startup_address(DATA_MEM_WIDTH - 3 downto 0) & "00";
@@ -227,8 +245,8 @@ AAsmund_RISC : entity work.top	port map
 	sleep => cpu_sleep,
 	
 	--test interface
-	pass  => pass,
-	fail  => fail,
+	pass  => pass_i,
+	fail  => fail_i,
 
 	--data memory interface
 	data_memory_address      => cpu_data_addr,
