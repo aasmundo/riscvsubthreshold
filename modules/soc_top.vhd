@@ -27,7 +27,7 @@ end entity;
 
 
 
-<<<<<<< HEAD
+
 architecture behave of soc_top is
 component SP_32bit 
 generic(
@@ -52,13 +52,12 @@ port(
         read_data : out std_logic_vector(31 downto 0)
 );
 end component;
-=======
-architecture behave of soc_top is 
+
 --test interface
 signal pass_i, pass_i_reg : std_logic;
 signal fail_i, fail_i_reg : std_logic;
 
->>>>>>> soc
+
 --SPI and startup
 signal spi_settings     :  std_logic;
 signal spi_data_in      :  std_logic_vector(31 downto 0);
