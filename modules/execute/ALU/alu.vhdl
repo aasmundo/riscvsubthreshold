@@ -132,13 +132,10 @@ begin
     end case;
 end process;
 
-or_process : process(add_res, sub_res, srl_res, sra_res, sltu_res, 
-    sll_res, slt_res, and_res, or_res, xor_res, bpt_res)
-begin
-    result <= add_res or sub_res or srl_res or sra_res or sltu_res or 
+
+result <= add_res or sub_res or srl_res or sra_res or sltu_res or 
     sll_res or slt_res or and_res or or_res or xor_res or bpt_res;
 
-end process;
 
 
 end alu_arch;

@@ -23,6 +23,6 @@ seq : process(A,B,pwr_en, addition, addition_gated)
 begin
 	addition <= std_logic_vector(signed(A) + signed(B));
 	
-	C <= addition_gated and (addition'range => not pwr_en);
+	C <= addition_gated and (addition'range => pwr_en);
 end process;
 end behave; 
