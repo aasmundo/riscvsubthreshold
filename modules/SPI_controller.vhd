@@ -81,7 +81,6 @@ combi : process(state, start, msg_cnt, byte_complete, settings, request, clear)
 begin
 	busy <= '0';
 	start_byte <= '0';
-	start_byte <= '0';
 	n_msg_cnt <= msg_cnt;
 	n_state <= state;
 	finished <= '0';
