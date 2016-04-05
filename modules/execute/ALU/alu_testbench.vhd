@@ -31,15 +31,22 @@ begin
 	for i in 0 to 1000 loop
 		UNIFORM(seed1, seed2, rand);
 		A_val := integer(trunc(rand*2147483648.0));
-		A_val := A_val - 1073741823;
-		A <= std_logic_vector(to_signed(A_val, 32));
+
 		UNIFORM(seed1, seed2, rand);
 		B_val := integer(trunc(rand*2147483648.0));
-		B_val := B_val - 1073741823;
-		B <= std_logic_vector(to_signed(B_val, 32));
+
 		UNIFORM(seed1, seed2, rand);
 		opcode_val := integer(trunc(rand*12.0));
 		operation <= std_logic_vector(to_signed(opcode_val, ALU_OPCODE_WIDTH));
+		if(operation = ALU_SLTU_opcode) then 
+			A <= std_logic_vector(to_unsigned(A_val, 32));
+			B <= std_logic_vector(to_unsigned(B_val, 32));
+		else
+			A_val := A_val - 1073741823; 
+			B_val := B_val - 1073741823;
+			A <= std_logic_vector(to_signed(A_val, 32)); 
+			B <= std_logic_vector(to_signed(B_val, 32));
+		end if;
 		wait for 5ns;
 		case operation is
 			when ALU_ADD_OPCODE =>
@@ -61,7 +68,7 @@ begin
 			when ALU_SRA_OPCODE =>
 				assert (to_integer(signed(result)) = to_integer(shift_right(signed(A), to_integer(unsigned(B(4 downto 0)))))) report "ALU sra error: "&integer'IMAGE(to_integer(signed(result)))&" should be: "&integer'IMAGE(to_integer(shift_right(signed(A), to_integer(unsigned(B(4 downto 0)))))) severity error;
 			when ALU_SLTU_opcode =>
-				if((A_val < B_val and result(0) = '0') or (not(A_val < B_val) and result(0) = '1')) then
+				if((unsigned(A) < unsigned(B) and result(0) = '0') or (not(unsigned(A) < unsigned(B)) and result(0) = '1')) then
 					assert (false) report "ALU sltu error" severity error;
 				end if;
 			when ALU_SRL_OPCODE =>
