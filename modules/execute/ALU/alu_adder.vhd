@@ -15,14 +15,8 @@ port(
 end alu_adder;
 
 architecture behave of alu_adder is 
-signal addition, addition_gated : std_logic_vector(31 downto 0);
+signal addition : std_logic_vector(31 downto 0);
 begin 
-addition_gated <= addition when (pwr_en = '1') else UNKNOWN_32BIT;
-
-seq : process(A,B,pwr_en, addition, addition_gated)
-begin
-	addition <= std_logic_vector(signed(A) + signed(B));
-	
-	C <= addition_gated and (addition'range => pwr_en);
-end process;
+C <= addition when (pwr_en = '1') else UNKNOWN_32BIT;
+addition <= std_logic_vector(signed(A) + signed(B));
 end behave; 

@@ -16,14 +16,8 @@ port(
 end alu_srl;
 
 architecture behave of alu_srl is 
-signal srl_res, srl_res_gated : std_logic_vector(31 downto 0);
+signal srl_res : std_logic_vector(31 downto 0);
 begin 
-srl_res_gated <= srl_res when (pwr_en = '1') else UNKNOWN_32BIT;
-
-seq : process(A,B,pwr_en, srl_res, srl_res_gated)
-begin
-	srl_res <= std_logic_vector(shift_right(unsigned(A), to_integer(unsigned(B))));
-	
-	C <= srl_res_gated and (srl_res_gated'range => pwr_en);
-end process;
+C <= srl_res when (pwr_en = '1') else UNKNOWN_32BIT;
+srl_res <= std_logic_vector(shift_right(unsigned(A), to_integer(unsigned(B))));
 end behave; 

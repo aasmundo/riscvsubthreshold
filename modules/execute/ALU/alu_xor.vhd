@@ -15,14 +15,8 @@ port(
 end alu_xor;
 
 architecture behave of alu_xor is 
-signal xor_res, xor_res_gated : std_logic_vector(31 downto 0);
+signal xor_res : std_logic_vector(31 downto 0);
 begin 
-xor_res_gated <= xor_res when (pwr_en = '1') else UNKNOWN_32BIT;
-
-seq : process(A,B,pwr_en, xor_res, xor_res_gated)
-begin
-	xor_res <= A xor B;
-	
-	C <= xor_res_gated and (xor_res_gated'range => pwr_en);
-end process;
+C <= xor_res when (pwr_en = '1') else UNKNOWN_32BIT;
+xor_res <= A xor B;
 end behave; 

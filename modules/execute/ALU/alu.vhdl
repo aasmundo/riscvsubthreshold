@@ -16,9 +16,9 @@ port (
 end alu;
 
 architecture alu_arch of alu is
-signal add_res, sub_res, and_res, or_res, xor_res,  
-	   sll_res, sra_res, srl_res, slt_res, sltu_res,
-	   bpt_res  : std_logic_vector(31 downto 0);
+signal add_res, add_res_iso, sub_res, sub_res_iso, and_res, and_res_iso, or_res, or_res_iso, xor_res, xor_res_iso,  
+	   sll_res, sll_res_iso, sra_res, sra_res_iso, srl_res, srl_res_iso, slt_res, slt_res_iso, sltu_res, sltu_res_iso,
+	   bpt_res, bpt_res_iso  : std_logic_vector(31 downto 0);
 signal add_en, sub_en, and_en, or_en, xor_en, sll_en, 
 	   sra_en, srl_en, slt_en, sltu_en, bpt_en : std_logic;
 begin
@@ -132,9 +132,22 @@ begin
     end case;
 end process;
 
+add_res_iso <= add_res and (add_res'range => add_en);
+sub_res_iso <= sub_res and (sub_res'range => sub_en);
+srl_res_iso <= srl_res and (srl_res'range => srl_en);
+sra_res_iso <= sra_res and (sra_res'range => sra_en);
+sltu_res_iso <= sltu_res and (sltu_res'range => sltu_en);
+sll_res_iso <= sll_res and (sll_res'range => sll_en);
+slt_res_iso <= slt_res and (slt_res'range => slt_en);
+and_res_iso <= and_res and (and_res'range => and_en);
+or_res_iso <= or_res and (or_res'range => or_en);
+xor_res_iso <= xor_res and (xor_res'range => xor_en);
+bpt_res_iso <= bpt_res and (bpt_res'range => bpt_en);
 
-result <= add_res or sub_res or srl_res or sra_res or sltu_res or 
-    sll_res or slt_res or and_res or or_res or xor_res or bpt_res;
+
+
+result <= add_res_iso or sub_res_iso or srl_res_iso or sra_res_iso or sltu_res_iso or 
+    sll_res_iso or slt_res_iso or and_res_iso or or_res_iso or xor_res_iso or bpt_res_iso;
 
 
 

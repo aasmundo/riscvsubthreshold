@@ -15,14 +15,8 @@ port(
 end alu_bpt;
 
 architecture behave of alu_bpt is 
-signal bpt_res, bpt_res_gated : std_logic_vector(31 downto 0);
+signal bpt_res : std_logic_vector(31 downto 0);
 begin 
-bpt_res_gated <= bpt_res when (pwr_en = '1') else UNKNOWN_32BIT;
-
-seq : process(B,pwr_en, bpt_res, bpt_res_gated)
-begin
-	bpt_res <= B;
-	
-	C <= bpt_res_gated and (bpt_res_gated'range => pwr_en);
-end process;
+C <= bpt_res when (pwr_en = '1') else UNKNOWN_32BIT;
+bpt_res <= B;
 end behave; 

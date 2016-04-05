@@ -15,16 +15,14 @@ port(
 end alu_sltu;
 
 architecture behave of alu_sltu is 
-signal sltu_res, sltu_res_gated : std_logic_vector(31 downto 0);
+signal sltu_res : std_logic_vector(31 downto 0);
 begin 
-sltu_res_gated <= sltu_res when (pwr_en = '1') else UNKNOWN_32BIT;
+C <= sltu_res when (pwr_en = '1') else UNKNOWN_32BIT;
 
-seq : process(A,B,pwr_en, sltu_res, sltu_res_gated)
+seq : process(A,B,pwr_en, sltu_res)
 begin
 	if(unsigned(A) < unsigned(B)) then sltu_res <= x"00000001";    
     else                               sltu_res <= x"00000000";            
     end if;
-    
-	C <= sltu_res_gated and (sltu_res_gated'range => pwr_en);
 end process;
 end behave; 

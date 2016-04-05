@@ -15,14 +15,9 @@ port(
 end alu_or;
 
 architecture behave of alu_or is 
-signal or_res, or_res_gated : std_logic_vector(31 downto 0);
+signal or_res : std_logic_vector(31 downto 0);
 begin 
-or_res_gated <= or_res when (pwr_en = '1') else UNKNOWN_32BIT;
+C <= or_res when (pwr_en = '1') else UNKNOWN_32BIT;
+or_res <= A or B;
 
-seq : process(A,B,pwr_en, or_res, or_res_gated)
-begin
-	or_res <= A or B;
-	
-	C <= or_res_gated and (or_res_gated'range => pwr_en);
-end process;
 end behave; 
