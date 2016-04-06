@@ -4,8 +4,8 @@ include "orig_netlist/alu.scs"
 include "acf.scs"
 
 amsd {
-	portmap subckt=alu  refformat=vhdl reffile=alu.vhd 
-	config cell=alu use=spice
-	ce name=worklib.std_logic2e dir=input type=std_logic genericmap="vsup 0.35" cell=alu 
-	ce name=worklib.e2std_logic dir=out type=std_logic genericmap="vsup 0.35" cell=alu
+        portmap subckt=alu  refformat=vhdl reffile=alu.vhd
+        config cell=alu use=spice
+        ce name=worklib.std_logic2e dir=input type=std_logic genericmap="vsup 0.35" cell=alu
+        ce name=worklib.e2std_logic dir=out type=std_logic genericmap="vsup 0.35" cell=alu
 }

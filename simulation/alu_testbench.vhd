@@ -6,25 +6,26 @@ library work;
 use work.constants.all;
 
 LIBRARY worklib;
-USE worklib.ALL;
 
 entity alu_testbench is
+port(not_connected : out std_logic
+);
 end alu_testbench;
 
 
 
 architecture alu_tb of alu_testbench is
-signal A, B, result : std_logic_vector(31 downto 0);
+signal A, B, result, result_a : std_logic_vector(31 downto 0);
 signal operation : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0);
 begin
 
-ALU: entity worklib.alu port map (
+ALUinstance : entity worklib.alu port map (
 A => A,
 B => B,
-result => result,
-operation => operation
+operation => operation,
+result => result_a
 );
-
+result <= result_a;
 stim: process
 variable seed1, seed2: positive;
 variable rand: real;
@@ -50,7 +51,7 @@ begin
 			A <= std_logic_vector(to_signed(A_val, 32)); 
 			B <= std_logic_vector(to_signed(B_val, 32));
 		end if;
-		wait for 5ns;
+		wait for 1 us;
 		case operation is
 			when ALU_ADD_OPCODE =>
 				assert (to_integer(signed(result)) = A_val + B_val) report "ALU add error: "&integer'IMAGE(to_integer(signed(result)))&" should be: "&integer'IMAGE(A_val + B_val) severity error;

@@ -6,7 +6,7 @@
 simulator lang=spectre
 global 0 vdd gnds vdds VDD GND
 //include "models.scs"
-include "/home/aasmundo/1_corners.scs"
+include "/home/aasmundo/corners/1_corners.scs"
 
 // Library name: S28_coreLVTPB4_AFBB
 // Cell name: LVT_NADN2x1_PB4_AFBB
@@ -996,7 +996,7 @@ subckt alu_adder pwr_en A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> \
         B\<31\> B\<30\> B\<29\> B\<28\> B\<27\> B\<26\> B\<25\> B\<24\> \
         B\<23\> B\<22\> B\<21\> B\<20\> B\<19\> B\<18\> B\<17\> B\<16\> \
         B\<15\> B\<14\> B\<13\> B\<12\> B\<11\> B\<10\> B\<9\> B\<8\> \
-        B\<7\> B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> GND! \
+        B\<7\> B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> inh_gnd \
         addition\<31\> addition\<30\> addition\<29\> addition\<28\> \
         addition\<27\> addition\<26\> addition\<25\> addition\<24\> \
         addition\<23\> addition\<22\> addition\<21\> addition\<20\> \
@@ -1759,7 +1759,7 @@ subckt alu_subtractor pwr_en A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> \
         B\<31\> B\<30\> B\<29\> B\<28\> B\<27\> B\<26\> B\<25\> B\<24\> \
         B\<23\> B\<22\> B\<21\> B\<20\> B\<19\> B\<18\> B\<17\> B\<16\> \
         B\<15\> B\<14\> B\<13\> B\<12\> B\<11\> B\<10\> B\<9\> B\<8\> \
-        B\<7\> B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> GND! \
+        B\<7\> B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> inh_gnd \
         subtraction\<31\> subtraction\<30\> subtraction\<29\> \
         subtraction\<28\> subtraction\<27\> subtraction\<26\> \
         subtraction\<25\> subtraction\<24\> subtraction\<23\> \
@@ -6677,37 +6677,37 @@ subckt alu_slt pwr_en A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> \
         nsig_delvto_uo1=0 nsig_delvto_uo2=0 soa=1 swshe=0 swacc=0 swrg=0 \
         swrsub=0 mismatch=1 m=1
     Thru0 (N32 C\<0\>) iprobe
-    Thru31 (GND! C\<31\>) iprobe
-    Thru30 (GND! C\<30\>) iprobe
-    Thru29 (GND! C\<29\>) iprobe
-    Thru28 (GND! C\<28\>) iprobe
-    Thru27 (GND! C\<27\>) iprobe
-    Thru26 (GND! C\<26\>) iprobe
-    Thru25 (GND! C\<25\>) iprobe
-    Thru24 (GND! C\<24\>) iprobe
-    Thru23 (GND! C\<23\>) iprobe
-    Thru22 (GND! C\<22\>) iprobe
-    Thru21 (GND! C\<21\>) iprobe
-    Thru20 (GND! C\<20\>) iprobe
-    Thru19 (GND! C\<19\>) iprobe
-    Thru18 (GND! C\<18\>) iprobe
-    Thru17 (GND! C\<17\>) iprobe
-    Thru16 (GND! C\<16\>) iprobe
-    Thru15 (GND! C\<15\>) iprobe
-    Thru14 (GND! C\<14\>) iprobe
-    Thru13 (GND! C\<13\>) iprobe
-    Thru12 (GND! C\<12\>) iprobe
-    Thru11 (GND! C\<11\>) iprobe
-    Thru10 (GND! C\<10\>) iprobe
-    Thru9 (GND! C\<9\>) iprobe
-    Thru8 (GND! C\<8\>) iprobe
-    Thru7 (GND! C\<7\>) iprobe
-    Thru6 (GND! C\<6\>) iprobe
-    Thru5 (GND! C\<5\>) iprobe
-    Thru4 (GND! C\<4\>) iprobe
-    Thru3 (GND! C\<3\>) iprobe
-    Thru2 (GND! C\<2\>) iprobe
-    Thru1 (GND! C\<1\>) iprobe
+    Thru31 (inh_gnd C\<31\>) iprobe
+    Thru30 (inh_gnd C\<30\>) iprobe
+    Thru29 (inh_gnd C\<29\>) iprobe
+    Thru28 (inh_gnd C\<28\>) iprobe
+    Thru27 (inh_gnd C\<27\>) iprobe
+    Thru26 (inh_gnd C\<26\>) iprobe
+    Thru25 (inh_gnd C\<25\>) iprobe
+    Thru24 (inh_gnd C\<24\>) iprobe
+    Thru23 (inh_gnd C\<23\>) iprobe
+    Thru22 (inh_gnd C\<22\>) iprobe
+    Thru21 (inh_gnd C\<21\>) iprobe
+    Thru20 (inh_gnd C\<20\>) iprobe
+    Thru19 (inh_gnd C\<19\>) iprobe
+    Thru18 (inh_gnd C\<18\>) iprobe
+    Thru17 (inh_gnd C\<17\>) iprobe
+    Thru16 (inh_gnd C\<16\>) iprobe
+    Thru15 (inh_gnd C\<15\>) iprobe
+    Thru14 (inh_gnd C\<14\>) iprobe
+    Thru13 (inh_gnd C\<13\>) iprobe
+    Thru12 (inh_gnd C\<12\>) iprobe
+    Thru11 (inh_gnd C\<11\>) iprobe
+    Thru10 (inh_gnd C\<10\>) iprobe
+    Thru9 (inh_gnd C\<9\>) iprobe
+    Thru8 (inh_gnd C\<8\>) iprobe
+    Thru7 (inh_gnd C\<7\>) iprobe
+    Thru6 (inh_gnd C\<6\>) iprobe
+    Thru5 (inh_gnd C\<5\>) iprobe
+    Thru4 (inh_gnd C\<4\>) iprobe
+    Thru3 (inh_gnd C\<3\>) iprobe
+    Thru2 (inh_gnd C\<2\>) iprobe
+    Thru1 (inh_gnd C\<1\>) iprobe
     lt_24 (A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> A\<25\> A\<24\> \
         A\<23\> A\<22\> A\<21\> A\<20\> A\<19\> A\<18\> A\<17\> A\<16\> \
         A\<15\> A\<14\> A\<13\> A\<12\> A\<11\> A\<10\> A\<9\> A\<8\> \
@@ -6715,7 +6715,7 @@ subckt alu_slt pwr_en A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> \
         B\<30\> B\<29\> B\<28\> B\<27\> B\<26\> B\<25\> B\<24\> B\<23\> \
         B\<22\> B\<21\> B\<20\> B\<19\> B\<18\> B\<17\> B\<16\> B\<15\> \
         B\<14\> B\<13\> B\<12\> B\<11\> B\<10\> B\<9\> B\<8\> B\<7\> \
-        B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> GND! VDD! N32 \
+        B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> inh_gnd inh_vdd N32 \
         NeTt_109 inh_gnd inh_gnds inh_vdd inh_vdds) alu_slt_DW01_cmp2_0
 ends alu_slt
 // End of subcircuit definition.
@@ -7071,37 +7071,37 @@ subckt alu_sltu pwr_en A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> \
         nsig_delvto_uo1=0 nsig_delvto_uo2=0 soa=1 swshe=0 swacc=0 swrg=0 \
         swrsub=0 mismatch=1 m=1
     Thru0 (N32 C\<0\>) iprobe
-    Thru31 (GND! C\<31\>) iprobe
-    Thru30 (GND! C\<30\>) iprobe
-    Thru29 (GND! C\<29\>) iprobe
-    Thru28 (GND! C\<28\>) iprobe
-    Thru27 (GND! C\<27\>) iprobe
-    Thru26 (GND! C\<26\>) iprobe
-    Thru25 (GND! C\<25\>) iprobe
-    Thru24 (GND! C\<24\>) iprobe
-    Thru23 (GND! C\<23\>) iprobe
-    Thru22 (GND! C\<22\>) iprobe
-    Thru21 (GND! C\<21\>) iprobe
-    Thru20 (GND! C\<20\>) iprobe
-    Thru19 (GND! C\<19\>) iprobe
-    Thru18 (GND! C\<18\>) iprobe
-    Thru17 (GND! C\<17\>) iprobe
-    Thru16 (GND! C\<16\>) iprobe
-    Thru15 (GND! C\<15\>) iprobe
-    Thru14 (GND! C\<14\>) iprobe
-    Thru13 (GND! C\<13\>) iprobe
-    Thru12 (GND! C\<12\>) iprobe
-    Thru11 (GND! C\<11\>) iprobe
-    Thru10 (GND! C\<10\>) iprobe
-    Thru9 (GND! C\<9\>) iprobe
-    Thru8 (GND! C\<8\>) iprobe
-    Thru7 (GND! C\<7\>) iprobe
-    Thru6 (GND! C\<6\>) iprobe
-    Thru5 (GND! C\<5\>) iprobe
-    Thru4 (GND! C\<4\>) iprobe
-    Thru3 (GND! C\<3\>) iprobe
-    Thru2 (GND! C\<2\>) iprobe
-    Thru1 (GND! C\<1\>) iprobe
+    Thru31 (inh_gnd C\<31\>) iprobe
+    Thru30 (inh_gnd C\<30\>) iprobe
+    Thru29 (inh_gnd C\<29\>) iprobe
+    Thru28 (inh_gnd C\<28\>) iprobe
+    Thru27 (inh_gnd C\<27\>) iprobe
+    Thru26 (inh_gnd C\<26\>) iprobe
+    Thru25 (inh_gnd C\<25\>) iprobe
+    Thru24 (inh_gnd C\<24\>) iprobe
+    Thru23 (inh_gnd C\<23\>) iprobe
+    Thru22 (inh_gnd C\<22\>) iprobe
+    Thru21 (inh_gnd C\<21\>) iprobe
+    Thru20 (inh_gnd C\<20\>) iprobe
+    Thru19 (inh_gnd C\<19\>) iprobe
+    Thru18 (inh_gnd C\<18\>) iprobe
+    Thru17 (inh_gnd C\<17\>) iprobe
+    Thru16 (inh_gnd C\<16\>) iprobe
+    Thru15 (inh_gnd C\<15\>) iprobe
+    Thru14 (inh_gnd C\<14\>) iprobe
+    Thru13 (inh_gnd C\<13\>) iprobe
+    Thru12 (inh_gnd C\<12\>) iprobe
+    Thru11 (inh_gnd C\<11\>) iprobe
+    Thru10 (inh_gnd C\<10\>) iprobe
+    Thru9 (inh_gnd C\<9\>) iprobe
+    Thru8 (inh_gnd C\<8\>) iprobe
+    Thru7 (inh_gnd C\<7\>) iprobe
+    Thru6 (inh_gnd C\<6\>) iprobe
+    Thru5 (inh_gnd C\<5\>) iprobe
+    Thru4 (inh_gnd C\<4\>) iprobe
+    Thru3 (inh_gnd C\<3\>) iprobe
+    Thru2 (inh_gnd C\<2\>) iprobe
+    Thru1 (inh_gnd C\<1\>) iprobe
     lt_24 (A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> A\<25\> A\<24\> \
         A\<23\> A\<22\> A\<21\> A\<20\> A\<19\> A\<18\> A\<17\> A\<16\> \
         A\<15\> A\<14\> A\<13\> A\<12\> A\<11\> A\<10\> A\<9\> A\<8\> \
@@ -7109,7 +7109,7 @@ subckt alu_sltu pwr_en A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> \
         B\<30\> B\<29\> B\<28\> B\<27\> B\<26\> B\<25\> B\<24\> B\<23\> \
         B\<22\> B\<21\> B\<20\> B\<19\> B\<18\> B\<17\> B\<16\> B\<15\> \
         B\<14\> B\<13\> B\<12\> B\<11\> B\<10\> B\<9\> B\<8\> B\<7\> \
-        B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> GND! GND! N32 \
+        B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> inh_gnd inh_gnd N32 \
         NeTt_108 inh_gnd inh_gnds inh_vdd inh_vdds) alu_sltu_DW01_cmp2_0
 ends alu_sltu
 // End of subcircuit definition.
@@ -7132,7 +7132,7 @@ subckt alu A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> A\<25\> A\<24\> \
         result\<15\> result\<14\> result\<13\> result\<12\> result\<11\> \
         result\<10\> result\<9\> result\<8\> result\<7\> result\<6\> \
         result\<5\> result\<4\> result\<3\> result\<2\> result\<1\> \
-        result\<0\> inh_gnd inh_gnds inh_vdd inh_vdds
+        result\<0\>
     U1535 (sltu_res\[0\] n795 n1463 inh_gnd inh_gnds inh_vdd inh_vdds) \
         LVT_NADN2x1_PB4_AFBB
     U1536 (xor_res\<0\> n809 n1462 inh_gnd inh_gnds inh_vdd inh_vdds) \
@@ -8653,22 +8653,22 @@ subckt alu A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> A\<25\> A\<24\> \
         B\<23\> B\<22\> B\<21\> B\<20\> B\<19\> B\<18\> B\<17\> B\<16\> \
         B\<15\> B\<14\> B\<13\> B\<12\> B\<11\> B\<10\> B\<9\> B\<8\> \
         B\<7\> B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> \
-        SYNOPSYS_UNCONNECTED__0 SYNOPSYS_UNCONNECTED__1 \
-        SYNOPSYS_UNCONNECTED__2 SYNOPSYS_UNCONNECTED__3 \
-        SYNOPSYS_UNCONNECTED__4 SYNOPSYS_UNCONNECTED__5 \
-        SYNOPSYS_UNCONNECTED__6 SYNOPSYS_UNCONNECTED__7 \
-        SYNOPSYS_UNCONNECTED__8 SYNOPSYS_UNCONNECTED__9 \
-        SYNOPSYS_UNCONNECTED__10 SYNOPSYS_UNCONNECTED__11 \
-        SYNOPSYS_UNCONNECTED__12 SYNOPSYS_UNCONNECTED__13 \
-        SYNOPSYS_UNCONNECTED__14 SYNOPSYS_UNCONNECTED__15 \
-        SYNOPSYS_UNCONNECTED__16 SYNOPSYS_UNCONNECTED__17 \
-        SYNOPSYS_UNCONNECTED__18 SYNOPSYS_UNCONNECTED__19 \
-        SYNOPSYS_UNCONNECTED__20 SYNOPSYS_UNCONNECTED__21 \
-        SYNOPSYS_UNCONNECTED__22 SYNOPSYS_UNCONNECTED__23 \
-        SYNOPSYS_UNCONNECTED__24 SYNOPSYS_UNCONNECTED__25 \
-        SYNOPSYS_UNCONNECTED__26 SYNOPSYS_UNCONNECTED__27 \
-        SYNOPSYS_UNCONNECTED__28 SYNOPSYS_UNCONNECTED__29 \
-        SYNOPSYS_UNCONNECTED__30 slt_res\[0\] inh_gnd inh_gnds inh_vdd \
+        slt_res\[31\] slt_res\[30\] \
+        slt_res\[29\] slt_res\[28\] \
+        slt_res\[27\] slt_res\[26\] \
+        slt_res\[25\] slt_res\[24\] \
+        slt_res\[23\] slt_res\[22\] \
+        slt_res\[21\] slt_res\[20\] \
+        slt_res\[19\] slt_res\[18\] \
+        slt_res\[17\] slt_res\[16\] \
+        slt_res\[15\] slt_res\[14\] \
+        slt_res\[13\] slt_res\[12\] \
+        slt_res\[11\] slt_res\[10\] \
+        slt_res\[9\] slt_res\[8\] \
+        slt_res\[7\] slt_res\[6\] \
+        slt_res\[5\] slt_res\[4\] \
+        slt_res\[3\] slt_res\[2\] \
+        slt_res\[1\] slt_res\[0\] inh_gnd inh_gnds inh_vdd \
         inh_vdds) alu_slt
     alu_sltu (n795 A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> A\<25\> \
         A\<24\> A\<23\> A\<22\> A\<21\> A\<20\> A\<19\> A\<18\> A\<17\> \
@@ -8678,22 +8678,22 @@ subckt alu A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> A\<25\> A\<24\> \
         B\<23\> B\<22\> B\<21\> B\<20\> B\<19\> B\<18\> B\<17\> B\<16\> \
         B\<15\> B\<14\> B\<13\> B\<12\> B\<11\> B\<10\> B\<9\> B\<8\> \
         B\<7\> B\<6\> B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> \
-        SYNOPSYS_UNCONNECTED__31 SYNOPSYS_UNCONNECTED__32 \
-        SYNOPSYS_UNCONNECTED__33 SYNOPSYS_UNCONNECTED__34 \
-        SYNOPSYS_UNCONNECTED__35 SYNOPSYS_UNCONNECTED__36 \
-        SYNOPSYS_UNCONNECTED__37 SYNOPSYS_UNCONNECTED__38 \
-        SYNOPSYS_UNCONNECTED__39 SYNOPSYS_UNCONNECTED__40 \
-        SYNOPSYS_UNCONNECTED__41 SYNOPSYS_UNCONNECTED__42 \
-        SYNOPSYS_UNCONNECTED__43 SYNOPSYS_UNCONNECTED__44 \
-        SYNOPSYS_UNCONNECTED__45 SYNOPSYS_UNCONNECTED__46 \
-        SYNOPSYS_UNCONNECTED__47 SYNOPSYS_UNCONNECTED__48 \
-        SYNOPSYS_UNCONNECTED__49 SYNOPSYS_UNCONNECTED__50 \
-        SYNOPSYS_UNCONNECTED__51 SYNOPSYS_UNCONNECTED__52 \
-        SYNOPSYS_UNCONNECTED__53 SYNOPSYS_UNCONNECTED__54 \
-        SYNOPSYS_UNCONNECTED__55 SYNOPSYS_UNCONNECTED__56 \
-        SYNOPSYS_UNCONNECTED__57 SYNOPSYS_UNCONNECTED__58 \
-        SYNOPSYS_UNCONNECTED__59 SYNOPSYS_UNCONNECTED__60 \
-        SYNOPSYS_UNCONNECTED__61 sltu_res\[0\] inh_gnd inh_gnds inh_vdd \
+        sltu_res\[31\] sltu_res\[30\] \
+        sltu_res\[29\] sltu_res\[28\] \
+        sltu_res\[27\] sltu_res\[26\] \
+        sltu_res\[25\] sltu_res\[24\] \
+        sltu_res\[23\] sltu_res\[22\] \
+        sltu_res\[21\] sltu_res\[20\] \
+        sltu_res\[19\] sltu_res\[18\] \
+        sltu_res\[17\] sltu_res\[16\] \
+        sltu_res\[15\] sltu_res\[14\] \
+        sltu_res\[13\] sltu_res\[12\] \
+        sltu_res\[11\] sltu_res\[10\] \
+        sltu_res\[9\] sltu_res\[8\] \
+        sltu_res\[7\] sltu_res\[6\] \
+        sltu_res\[5\] sltu_res\[4\] \
+        sltu_res\[3\] sltu_res\[2\] \
+        sltu_res\[1\] sltu_res\[0\] inh_gnd inh_gnds inh_vdd \
         inh_vdds) alu_sltu
     V3 (0 inh_gnd) vsource dc=0 type=dc
     V2 (inh_gnds inh_gnd) vsource dc=0 type=dc
@@ -8701,3 +8701,4 @@ subckt alu A\<31\> A\<30\> A\<29\> A\<28\> A\<27\> A\<26\> A\<25\> A\<24\> \
     V0 (inh_vdd inh_gnd) vsource dc=350m type=dc
 ends alu
 // End of subcircuit definition.
+
