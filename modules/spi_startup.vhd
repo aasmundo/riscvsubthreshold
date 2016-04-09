@@ -35,8 +35,8 @@ type state_t is (STARTUP_WAIT, READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
 READ_DATA_1, READ_DATA_2, READ_DATA_3, READ_DATA_4, IDLE);
 constant read_status_settings : std_logic_vector(31 downto 0) := x"00000001";
 constant read_status_seq : std_logic_vector(31 downto 0) := x"05000000";
-constant read_data_settings_1 : std_logic_vector(31 downto 0) := x"02000000";
-constant read_data_settings_2 : std_logic_vector(31 downto 0) := x"03000000";
+constant read_data_settings_1 : std_logic_vector(31 downto 0) := x"00000002";
+constant read_data_settings_2 : std_logic_vector(31 downto 0) := x"00000003";
 constant read_data_seq     : std_logic_vector(31 downto 0) := x"03000000";
 signal state, n_state : state_t;
 signal word_cnt, n_word_cnt, word_cnt_incr : unsigned(10 downto 0);
@@ -99,7 +99,7 @@ begin
 			if(spi_finished = '1') then
 				n_word_cnt <= word_cnt_incr;
 				we <= '1';
-				if(word_cnt = "11111111111") then
+				if(word_cnt = "10000000000") then
 					n_state <= IDLE;
 					spi_clear <= '1';
 				else
