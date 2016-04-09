@@ -16,9 +16,9 @@ end entity;
 
 architecture behave of soc_top_tb is
 constant hex_folder : String(1 to 51) := "C:\prosjektoppgave\riscvsubthreshold\tests\myTests\";
-
+constant number_of_tests : integer := 38;
 type mem_t is array(0 to ((2**PC_WIDTH) - 1)) of std_logic_vector(31 downto 0);
-type tests_t is array(0 to 37) of mem_t;
+type tests_t is array(0 to number_of_tests - 1) of mem_t;
 signal tests : tests_t;
 type spi_state_t is (NOT_SELECTED, INSTRUCTION, WRITE_SETTINGS, ADDRESS, READ);
 
@@ -26,7 +26,7 @@ impure function ocram_ReadMemFile(FileName : STRING) return mem_t is
   file FileHandle       : TEXT open READ_MODE is FileName;
   variable CurrentLine  : LINE;
   variable TempWord     : STD_LOGIC_VECTOR(31 downto 0);
-  variable Result       : mem_t    := (others => (others => 'U'));
+  variable Result       : mem_t    := (others => (others => '0'));
 
 begin
   for i in 0 to (2**PC_WIDTH) - 1 loop
@@ -86,7 +86,6 @@ soc : entity work.soc_top port map(
 	
 	
 process
-variable i : integer := 128;
 begin 
 tests(1) <= ocram_ReadMemFile(hex_folder & "super_simple_test.hex");	  --pass
 tests(0) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-addi.hex");	  --pass
@@ -129,50 +128,43 @@ tests(37) <= ocram_ReadMemFile(hex_folder & "rv32ui-findPrimeHuge.hex");
 wait;
 end process;
 
-process(sclk, cs1)
-variable i : integer := 0;
-variable spi_state : spi_state_t; 
-variable bit_num : integer := 0;	  
-variable read_mode : std_logic := '0';
-variable last_bits : std_logic_vector(23 downto 0);
-begin
-	if(sclk'event and sclk = '1' and cs1 = '0' and nreset = '1') then
-		
-		if(read_mode = '1') then
-			bit_num := bit_num + 1;
-			if(bit_num > 31) then 
-				bit_num := 0;
-				i := i + 1;
-			end if;
-		end if;
-		last_bits(23) := mosi;
-		for j in 0 to 22 loop
-			last_bits(j) := last_bits(j+1);
-		end loop;
-		if(last_bits = x"030000") then
-			read_mode := '1';
-		end if;
-	end if;	   
-	miso <= tests(test_num)(i)(bit_num);
-end process;
-
-process(pass, fail, nreset)
-begin
-assert ((fail /= '1') or (nreset = '0')) report "test " & integer'image(test_num) &" FAIL" severity failure;
-assert ((pass /= '1') or (nreset = '0')) report "test " & integer'image(test_num) &" PASS" severity note;
-if(pass'event and pass = '1' and nreset = '1') then
-	test_num <= test_num + 1;
-end if;
-assert (test_num < 37) or (nreset = '0') report "All tests finished" severity failure;
-end process;
-
 process
+variable status_check_seq : std_logic_vector(0 to 15) := "00000101" & "00000000";
+variable start_read_seq : std_logic_vector(0 to 23) := "00000011" & x"0000";
 begin
-nreset <= '1';
-wait for 50 us;
-nreset <= '0';
-wait for 100 us;
-nreset <= '1';
-wait;
+	nreset <= '1';
+	wait for 5 us;
+	nreset <= '0';
+	wait for 5 us;
+	nreset <= '1'; 
+	for testnum in 0 to number_of_tests - 1 loop
+		wait until cs1 = '0';
+		miso <= '0';
+		for j in 0 to status_check_seq'length - 1 loop	
+			wait until sclk = '1';
+			assert (cs1 = '0') report "chip select not asserted in startup check" severity failure;
+			assert (mosi = status_check_seq(j)) report "wrong startup sequence" severity failure;		
+		end loop; 
+		wait until cs1 = '1';
+		for j in 0 to start_read_seq'length - 1 loop	
+			wait until sclk = '1';
+			assert (cs1 = '0') report "chip select not asserted in start read check" severity failure;
+			assert (mosi = start_read_seq(j)) report "wrong startup sequence" severity failure;		
+		end loop;
+	
+		for i in 0 to 32767 loop
+			assert (cs1 = '0') report "chip select not asserted while reading program" severity failure;
+			wait until sclk = '0';
+			miso <= tests(testnum)(i / 32)(31 - (i mod 32));
+		end loop;
+		wait until (pass = '1' or fail = '1');
+		assert ((fail /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" FAIL" severity failure;
+		assert ((pass /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" PASS" severity note;
+		nreset <= '0';
+		wait for 3 us;
+		nreset <= '1';
+	end loop;
+	
 end process;
+
 end behave;
