@@ -99,7 +99,7 @@ begin
 			if(spi_finished = '1') then
 				n_word_cnt <= word_cnt_incr;
 				we <= '1';
-				if(word_cnt = "10000000000") then
+				if(word_cnt = "01111111111") then
 					n_state <= IDLE;
 					spi_clear <= '1';
 				else
