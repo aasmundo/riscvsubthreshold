@@ -43,7 +43,7 @@ signal spi_clear        :  std_logic;
 signal spi_start        :  std_logic;
 
 signal startup_data_mem : std_logic_vector(31 downto 0);	
-signal startup_address  : std_logic_vector(DATA_MEM_WIDTH - 2 downto 0);
+signal startup_address  : std_logic_vector(DATA_MEM_WIDTH - 3 downto 0);
 signal startup_we		: std_logic;
 signal startup_done		: std_logic;
 
@@ -58,17 +58,30 @@ signal instr_data_r		: std_logic_vector(31 downto 0);
 signal instr_addr		: std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 signal instr_re         : std_logic;
 
-signal data_we          : std_logic;
+signal data_we          : std_logic; 
+signal data_mem_we      : std_logic;
 signal data_data_w		: std_logic_vector(31 downto 0);
 signal data_data_r		: std_logic_vector(31 downto 0);
-signal data_addr        : std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+signal data_addr        : std_logic_vector(SPI_AND_DATA_MEM_WIDTH - 1 downto 0);
 signal data_be          : std_logic_vector(1 downto 0);
-signal data_re          : std_logic;  
+signal data_re          : std_logic; 
+
+signal data_mem_data_r  : std_logic_vector(31 downto 0); 
+signal data_mem_re      : std_logic;
+signal data_busy        : std_logic;
+
 
 signal startup_instr_addr : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
-signal startup_data_addr  : std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+signal startup_data_addr  : std_logic_vector(SPI_AND_DATA_MEM_WIDTH - 1 downto 0);
 signal startup_instr_we   : std_logic;
-signal startup_data_we    : std_logic; 
+signal startup_data_we    : std_logic;
+
+signal startup_spi_data_in  : std_logic_vector(31 downto 0);
+signal startup_spi_data_out : std_logic_vector(31 downto 0);
+signal startup_spi_finished : std_logic;
+signal startup_spi_start    : std_logic;
+signal startup_spi_clear    : std_logic;
+signal startup_spi_settings : std_logic;
 
 signal cpu_instr_we         : std_logic;
 signal cpu_instr_data_w		: std_logic_vector(31 downto 0);
@@ -78,11 +91,23 @@ signal cpu_instr_re         : std_logic;
 
 signal cpu_data_we          : std_logic;
 signal cpu_data_data_w		: std_logic_vector(31 downto 0);
-signal cpu_data_data_r		: std_logic_vector(31 downto 0);
-signal cpu_data_addr        : std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+signal cpu_data_addr        : std_logic_vector(SPI_AND_DATA_MEM_WIDTH - 1 downto 0);
 signal cpu_data_be          : std_logic_vector(1 downto 0);
 signal cpu_data_re          : std_logic;
 
+signal cpu_spi_data_in  : std_logic_vector(31 downto 0);
+signal cpu_spi_data_out : std_logic_vector(31 downto 0);
+signal cpu_spi_finished : std_logic;
+signal cpu_spi_start    : std_logic;
+signal cpu_spi_clear    : std_logic;
+signal cpu_spi_settings : std_logic;
+
+signal data_to_spi : std_logic_vector(31 downto 0);
+
+signal spi_out, spi_status : std_logic_vector(31 downto 0);
+
+
+signal mem_or_spi           : std_logic;
 
 --CPU
 signal cpu_sleep : std_logic;
@@ -126,46 +151,120 @@ begin
 end process;
 
 startup_instr_addr <= startup_address(DATA_MEM_WIDTH - 3 downto 0) & "00";
-startup_data_addr  <= startup_address(DATA_MEM_WIDTH - 3 downto 0) & "00";
-startup_instr_we   <= startup_we and not startup_address(DATA_MEM_WIDTH - 2);
-startup_data_we	<= startup_we;
+startup_data_addr  <= '0' & startup_address(DATA_MEM_WIDTH - 3 downto 0) & "00";
+
+cpu_spi_data_in <= cpu_data_data_w;
+startup_spi_finished <= spi_finished;
+startup_spi_data_out <= spi_data_out;
+cpu_spi_data_out <= spi_data_out;
 
 memory_control_selector : process(startup_done, startup_instr_addr, 
 startup_data_addr, startup_instr_we, startup_data_we, startup_data_mem, 
 startup_data_mem, cpu_instr_addr, cpu_data_addr, cpu_instr_we,
-cpu_data_we, cpu_data_be, cpu_instr_data_w, cpu_data_re, cpu_instr_re)
+cpu_data_we, cpu_data_be, cpu_instr_data_w, cpu_data_re, cpu_instr_re, 
+cpu_data_data_w, startup_spi_data_in, startup_spi_start, startup_spi_clear, 
+startup_spi_settings, cpu_spi_data_in , cpu_spi_start, cpu_spi_clear, cpu_spi_settings)
 begin
 	case (startup_done) is
 		when '0' =>
-			instr_addr   <= startup_instr_addr;
-			data_addr    <= startup_data_addr;
-			instr_we     <= startup_instr_we;
-			data_we      <= startup_data_we;
-			data_be      <= "10";
-			instr_data_w <= startup_data_mem;
-			data_data_w  <= startup_data_mem;
-			data_re      <= '0';
-			instr_re     <= '0';
+			instr_addr    <= startup_instr_addr;
+			data_addr     <= startup_data_addr;
+			instr_we      <= startup_instr_we;
+			data_we       <= startup_data_we;
+			data_be       <= "10";
+			instr_data_w  <= startup_data_mem;
+			data_data_w   <= startup_data_mem;
+			data_re       <= '0';
+			instr_re      <= '0';
+			data_to_spi   <= startup_spi_data_in;
+			spi_start     <= startup_spi_start;
+			spi_clear     <= startup_spi_clear;
+			spi_settings  <= startup_spi_settings;
 		when '1' =>
-			instr_addr   <= cpu_instr_addr;
-			data_addr    <= cpu_data_addr;
-			instr_we     <= cpu_instr_we;
-			data_we      <= cpu_data_we;
-			data_be      <= cpu_data_be;
-			instr_data_w <= cpu_instr_data_w;
-			data_data_w  <= cpu_data_data_w;
-			data_re      <= cpu_data_re;
-			instr_re     <= cpu_instr_re;
+			instr_addr    <= cpu_instr_addr;
+			data_addr     <= cpu_data_addr;
+			instr_we      <= cpu_instr_we;
+			data_we       <= cpu_data_we;
+			data_be       <= cpu_data_be;
+			instr_data_w  <= cpu_instr_data_w;
+			data_data_w   <= cpu_data_data_w;
+			data_re       <= cpu_data_re;
+			instr_re      <= cpu_instr_re;
+			data_to_spi   <= cpu_spi_data_in;
+			spi_start     <= cpu_spi_start;
+			spi_clear     <= cpu_spi_clear;
+			spi_settings  <= cpu_spi_settings;
 		when others =>
 			NULL;
 	end case;
 end process;
+
+memory_map : process(data_addr)
+begin
+	if(data_addr(SPI_AND_DATA_MEM_WIDTH - 1 downto 2) = SPI_MEMORY_MAP) then
+		mem_or_spi <= SPI_MAP;	
+	else
+		mem_or_spi <= MEM_MAP;
+	end if;
+end process;
+
+
+spi_mem_map_decode : process(mem_or_spi, data_addr, data_re, data_we, spi_data_out, data_mem_data_r)
+
+begin
+	case (mem_or_spi) is
+		when SPI_MAP =>
+			data_mem_we     <= '0';
+			data_mem_re     <= '0';	
+			data_data_r     <= spi_out;
+			data_busy       <= spi_busy;
+		when MEM_MAP =>
+			data_mem_we     <= data_we;
+			data_mem_re     <= data_re;
+			data_data_r     <= data_mem_data_r;	 
+			data_busy       <= '0';
+		when others =>
+			null;
+	end case;
+	
+	cpu_spi_settings <= '0';
+	cpu_spi_start    <= '0';
+	cpu_spi_clear    <= '0';
+	spi_out <= spi_data_out;
+	
+	case (data_addr(1 downto 0)) is
+		when "00" =>
+		  spi_out <= x"0000000" & "00" & spi_busy & spi_finished; 
+		when SPI_settings_OP =>
+		  cpu_spi_settings  <= mem_or_spi and data_we;
+		when SPI_START_OP    =>
+		  cpu_spi_start     <= mem_or_spi and data_we;
+		when SPI_clear_OP    =>
+		  cpu_spi_clear     <= mem_or_spi and data_we;
+		when others => NULL;
+	end case;	
+end process;   
+
+
+--spi_control_selector : process(startup_done)
+--begin
+--	case (startup_done) is
+--		when '0' =>
+--		
+--		when '1' =>
+--		
+--		when others =>
+--			NULL;
+--	end case;
+--		
+--end process;
+
 	
 spi_controller : entity work.SPI_controller port map(
 	clk        => d_clk,
 	nreset     => sync_reset,
 	request    => spi_settings,
-	data_in    => spi_data_in,
+	data_in    => data_to_spi,
 	data_out   => spi_data_out,
 	
 	busy       => spi_busy,
@@ -188,18 +287,19 @@ startup_controller : entity work.spi_startup port map(
 	nreset     => sync_reset,
 	
 	--SPI controller interface--
-	data_to_spi => spi_data_in,
-	data_from_spi => spi_data_out,
-	spi_finished => spi_finished,
-	spi_start => spi_start,
-	spi_clear => spi_clear,
-	spi_settings => spi_settings,
+	data_to_spi => startup_spi_data_in,
+	data_from_spi => startup_spi_data_out,
+	spi_finished => startup_spi_finished,
+	spi_start => startup_spi_start,
+	spi_clear => startup_spi_clear,
+	spi_settings => startup_spi_settings,
 	
 	
 	--Memory interface--
 	data_mem => startup_data_mem,
 	address  => startup_address,
-	we       => startup_we,
+	instr_we => startup_instr_we,	
+	data_we  => startup_data_we,
 	
 	done     => startup_done
 	
@@ -230,10 +330,10 @@ data_memory : entity work.bram generic map(
 port map(
 	clk => d_clk,
 	byte_enable => data_be,
-	address => data_addr,
-	we => data_we,
+	address => data_addr(DATA_MEM_WIDTH - 1 downto 0),
+	we => data_mem_we,
 	write_data => data_data_w,
-	read_data => data_data_r
+	read_data => data_mem_data_r
 );	
 
 
@@ -253,7 +353,8 @@ AAsmund_RISC : entity work.top	port map
 	data_memory_read_data    =>	data_data_r, 
 	data_memory_be           =>	cpu_data_be,
 	data_memory_write_data   => cpu_data_data_w,
-	data_memory_write_enable => cpu_data_we, 
+	data_memory_write_enable => cpu_data_we,
+	data_memory_read_enable => cpu_data_re,
 	
 	--instruction memory interface
 	inst_memory_address => cpu_instr_addr,
@@ -262,6 +363,6 @@ AAsmund_RISC : entity work.top	port map
 	);
 
 cpu_instr_data_w <= x"00000000";
-cpu_data_re <= '1'; --TODO: Implement read enable signal
+
 cpu_instr_re <= '1'; --TODO: Implement read enable signal
 end behave;
