@@ -104,10 +104,10 @@ signal cpu_spi_settings : std_logic;
 
 signal data_to_spi : std_logic_vector(31 downto 0);
 
-signal spi_out, spi_status : std_logic_vector(31 downto 0);
+signal spi_out, spi_status, spi_out_regs : std_logic_vector(31 downto 0);
 
 
-signal mem_or_spi           : std_logic;
+signal mem_or_spi, mem_or_spi_reg        : std_logic;
 
 --CPU
 signal cpu_sleep : std_logic;
@@ -208,21 +208,38 @@ begin
 	end if;
 end process;
 
+spi_status_regs : process(d_clk)
+begin
+	if(d_clk'event and d_clk = '1') then
+		spi_out_regs <= spi_out;
+		mem_or_spi_reg <= mem_or_spi;
+	end if;
+end process;
 
-spi_mem_map_decode : process(mem_or_spi, data_addr, data_re, data_we, spi_data_out, data_mem_data_r)
+
+spi_mem_map_decode : process(mem_or_spi, data_addr, data_re, data_we, spi_data_out, data_mem_data_r, spi_busy, spi_out, mem_or_spi_reg)
 
 begin
 	case (mem_or_spi) is
 		when SPI_MAP =>
 			data_mem_we     <= '0';
 			data_mem_re     <= '0';	
-			data_data_r     <= spi_out;
+			
 			data_busy       <= spi_busy;
 		when MEM_MAP =>
 			data_mem_we     <= data_we;
 			data_mem_re     <= data_re;
-			data_data_r     <= data_mem_data_r;	 
+				 
 			data_busy       <= '0';
+		when others =>
+			null;
+	end case;
+	
+	case (mem_or_spi_reg) is
+		when SPI_MAP =>
+			data_data_r     <= spi_out_regs;
+		when MEM_MAP =>
+			data_data_r     <= data_mem_data_r;
 		when others =>
 			null;
 	end case;
@@ -234,13 +251,13 @@ begin
 	
 	case (data_addr(1 downto 0)) is
 		when "00" =>
-		  spi_out <= x"0000000" & "00" & spi_busy & spi_finished; 
+		  spi_out <= x"0000000" & "00" &  spi_finished & spi_busy; 	--address: FFC
 		when SPI_settings_OP =>
-		  cpu_spi_settings  <= mem_or_spi and data_we;
+		  cpu_spi_settings  <= mem_or_spi and data_we;              --address: FFD
 		when SPI_START_OP    =>
-		  cpu_spi_start     <= mem_or_spi and data_we;
+		  cpu_spi_start     <= mem_or_spi and data_we;              --address: FFE
 		when SPI_clear_OP    =>
-		  cpu_spi_clear     <= mem_or_spi and data_we;
+		  cpu_spi_clear     <= mem_or_spi and data_we;              --address: FFF
 		when others => NULL;
 	end case;	
 end process;   
