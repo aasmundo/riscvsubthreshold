@@ -88,7 +88,7 @@ soc : entity work.soc_top port map(
 process
 begin 
 tests(1) <= ocram_ReadMemFile(hex_folder & "super_simple_test.hex");	  --pass
-tests(0) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-addi.hex");	  --pass
+tests(14) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-addi.hex");	  --pass
 tests(2) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-and.hex");		 --pass
 tests(3) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-andi.hex");		 --pass
 tests(4) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-auipc.hex");
@@ -101,7 +101,7 @@ tests(10) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-bne.hex");
 tests(11) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-j.hex");
 tests(12) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-jal.hex");
 tests(13) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-jalr.hex");
-tests(14) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lb.hex");
+tests(23) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lb.hex");
 tests(15) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lbu.hex");
 tests(16) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lh.hex");
 tests(17) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lhu.hex");
@@ -110,7 +110,7 @@ tests(19) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lw.hex");
 tests(20) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-or.hex");
 tests(21) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-ori.hex");
 tests(22) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sb.hex");
-tests(23) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sh.hex");
+tests(37) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sh.hex");
 tests(24) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-simple.hex");
 tests(25) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sll.hex");
 tests(26) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-slt.hex");
@@ -124,7 +124,7 @@ tests(33) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sw.hex");
 tests(34) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-xor.hex");
 tests(35) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-xori.hex");
 tests(36) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-add.hex");
-tests(37) <= ocram_ReadMemFile(hex_folder & "rv32ui-findPrimeHuge.hex");
+tests(0) <= ocram_ReadMemFile(hex_folder & "spi_test_by_hand.hex");
 wait;
 end process;
 
