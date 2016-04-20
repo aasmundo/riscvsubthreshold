@@ -30,6 +30,7 @@ entity instruction_decode is
 	
 	--control
 	mem_we : out std_logic;
+	mem_re : out std_logic;
 	mem_be : out std_logic_vector(1 downto 0);
 	wb_src : out std_logic_vector(1 downto 0);
 	wb_we  : out std_logic;
@@ -81,6 +82,7 @@ control : entity work.control port map
 		wb_we => wb_we,	
 		wb_src => wb_src,
 		mem_we => mem_we,
+		mem_re => mem_re,
 		mem_write_width => mem_be,
 		is_branch => is_branch,
 		is_jump => is_jump,

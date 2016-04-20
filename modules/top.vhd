@@ -16,11 +16,12 @@ entity top is
 	fail               : out std_logic;
 
 	--data memory interface
-	data_memory_address : out std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+	data_memory_address : out std_logic_vector(SPI_AND_DATA_MEM_WIDTH - 1 downto 0);
 	data_memory_read_data : in std_logic_vector(31 downto 0);
 	data_memory_be        : out std_logic_vector(1 downto 0);
 	data_memory_write_data : out std_logic_vector(31 downto 0);
-	data_memory_write_enable : out std_logic;
+	data_memory_write_enable : out std_logic;  
+	data_memory_read_enable : out std_logic;
 	
 	--instruction memory interface
 	inst_memory_address : out std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
@@ -59,6 +60,7 @@ signal rs1_ID : std_logic_vector(4 downto 0);
 signal rs2_ID : std_logic_vector(4 downto 0);
 signal rd_ID : std_logic_vector(4 downto 0);
 signal mem_we_ID : std_logic;
+signal mem_re_ID : std_logic;
 signal mem_be_ID : std_logic_vector(1 downto 0);
 signal wb_src_ID : std_logic_vector(1 downto 0);
 signal wb_we_ID  : std_logic;
@@ -81,6 +83,7 @@ signal rs1_IDEX : std_logic_vector(4 downto 0);
 signal rs2_IDEX : std_logic_vector(4 downto 0);
 signal is_imm_IDEX : std_logic;
 signal mem_we_IDEX : std_logic;
+signal mem_re_IDEX : std_logic;
 signal mem_be_IDEX : std_logic_vector(1 downto 0);
 signal mem_load_unsigned_IDEX : std_logic;
 signal wb_src_IDEX : std_logic_vector(1 downto 0);
@@ -104,7 +107,8 @@ signal rd_EXMEM : std_logic_vector(4 downto 0);
 signal ALU_result_EXMEM : std_logic_vector(31 downto 0);
 signal flush_EXMEM : std_logic;
 signal reg2_EXMEM : std_logic_vector(31 downto 0);
-signal mem_we_EXMEM : std_logic;
+signal mem_we_EXMEM : std_logic;  
+signal mem_re_EXMEM : std_logic;
 signal mem_be_EXMEM : std_logic_vector(1 downto 0);
 signal is_branch_EXMEM : std_logic;
 signal wb_we_EXMEM : std_logic;
@@ -225,8 +229,9 @@ instruction_decode : entity work.instruction_decode port map(
     is_imm              => is_imm_ID,
     rs1                 => rs1_ID,
     rs2                 => rs2_ID,
-	rd => rd_ID,
+	rd                  => rd_ID,
     mem_we              => mem_we_ID,
+	mem_re              => mem_re_ID,
     mem_be              => mem_be_ID,
     wb_src              => wb_src_ID,
     wb_we               => wb_we_ID,
@@ -260,10 +265,12 @@ IDEX_pipeline_register : entity work.IDEX_preg port map(
     is_imm_in           => is_imm_ID,
     is_imm_out          => is_imm_IDEX,
     mem_we_in           => mem_we_ID,
+	mem_re_in           => mem_re_ID,
     mem_be_in           => mem_be_ID,
     wb_src_in           => wb_src_ID,
     wb_we_in            => wb_we_ID,
     mem_we_out          => mem_we_IDEX,
+	mem_re_out          => mem_re_IDEX,
     mem_be_out          => mem_be_IDEX,
     wb_src_out          => wb_src_IDEX,
     wb_we_out           => wb_we_IDEX,
@@ -317,6 +324,8 @@ EXMEM_pipeline_register : entity work.EXMEM_preg port map(
     rs2_data_out        => reg2_EXMEM,
     mem_we_in           => mem_we_IDEX,
     mem_we_out          => mem_we_EXMEM,
+	mem_re_in           => mem_re_IDEX,
+	mem_re_out          => mem_re_EXMEM,
     mem_write_width_in  => mem_be_IDEX,
     mem_write_width_out => mem_be_EXMEM,
     is_branch_in        => is_branch_IDEX,
@@ -349,6 +358,7 @@ memory : entity work.memory port map(
     rs2_src             => mem_rs2_src_EX,
     mem_write_width     => mem_be_EXMEM,
     mem_we              => mem_we_EXMEM,
+	mem_re              => mem_re_EXMEM,
     funct3              => funct3_EXMEM,
     control_transfer    => control_transfer_MEM,
     branch_target       => branch_target_EXMEM,
@@ -361,6 +371,7 @@ memory : entity work.memory port map(
 	bram_mem_be         => data_memory_be,
 	bram_addr           => data_memory_address,
 	bram_we             => data_memory_write_enable,
+	bram_re             => data_memory_read_enable,
 	bram_data_in        => data_memory_write_data
 	);
 
@@ -424,10 +435,10 @@ test_process : process(instruction_IFID) is
 begin
 	pass <= '0';
 	fail <= '0';
-	if(instruction_IFID = x"0040006f") then	 
+	if(instruction_IFID = x"9a559a55") then	 
 		pass <= '1';
 	end if;
-	if(instruction_IFID = x"0100006f") then	 
+	if(instruction_IFID = x"fa11fa11") then	 
 		fail <= '1';
 	end if;		
 end process;

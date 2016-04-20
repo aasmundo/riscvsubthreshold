@@ -26,7 +26,6 @@ end activity_control;
 architecture behave of activity_control is
 signal stall_i : std_logic;
 signal sleeping	: std_logic;
-signal init_sleep_i : std_logic;
 begin
 	counter_enable <= not sleep;	
 	stall_i <= (sleeping or stall_ID) and nreset;
@@ -34,9 +33,7 @@ begin
 	flush_IFID <= control_transfer_MEM or sleep or not nreset;
 	flush_IDEX <= control_transfer_MEM or sleep or stall_i or not nreset;
 	flush_EXMEM <= control_transfer_MEM or sleep or not nreset;
-	flush_MEMWB <= not init_sleep_i or not nreset;	
-	init_sleep_i <= sleep and (not sleeping) and nreset;
-	init_sleep <= init_sleep_i;	  
+	flush_MEMWB <= not nreset;	  
 	stall <= stall_i;
 	
 	seq : process(clk) is
