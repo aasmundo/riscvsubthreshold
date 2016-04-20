@@ -122,12 +122,13 @@ boj_target_adder : entity work.branch_target_adder port map(
 	imm => relevant_imm
 	);
 	
-branch_predictor : entity work.two_level_bp generic map(
+branch_predictor : entity work.bp_pg_wrapper generic map(
 	prediction_window => PREDICTION_TABLE_SIZE,
-	prediction_history => 4) 
---branch_predictor : entity work.branch_predictor generic map(
-	--prediction_window => PREDICTION_TABLE_SIZE)
+	prediction_history => 8) 
+--branch_predictor : entity work.bp_pg_wrapper generic map(
+--	prediction_window => PREDICTION_TABLE_SIZE)
 	port map(
+	pwr_en => '1',
 	clk => clk,
 	nreset => nreset,
 	PC_incr_IF => PC_incr(PREDICTION_TABLE_SIZE + 1 downto 2),
