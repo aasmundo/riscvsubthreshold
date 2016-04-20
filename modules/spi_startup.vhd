@@ -22,8 +22,9 @@ entity spi_startup is
 	
 	--Memory interface--
 	data_mem : out std_logic_vector(31 downto 0);
-	address  : out std_logic_vector(DATA_MEM_WIDTH - 2 downto 0);
-	we       : out std_logic;
+	address  : out std_logic_vector(DATA_MEM_WIDTH - 3 downto 0);
+	data_we  : out std_logic; 
+	instr_we : out std_logic;
 	
 	done     : out std_logic	
 	);
@@ -35,15 +36,15 @@ type state_t is (STARTUP_WAIT, READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
 READ_DATA_1, READ_DATA_2, READ_DATA_3, READ_DATA_4, IDLE);
 constant read_status_settings : std_logic_vector(31 downto 0) := x"00000001";
 constant read_status_seq : std_logic_vector(31 downto 0) := x"05000000";
-constant read_data_settings_1 : std_logic_vector(31 downto 0) := x"02000000";
-constant read_data_settings_2 : std_logic_vector(31 downto 0) := x"03000000";
+constant read_data_settings_1 : std_logic_vector(31 downto 0) := x"00000002";
+constant read_data_settings_2 : std_logic_vector(31 downto 0) := x"00000003";
 constant read_data_seq     : std_logic_vector(31 downto 0) := x"03000000";
 signal state, n_state : state_t;
 signal word_cnt, n_word_cnt, word_cnt_incr : unsigned(10 downto 0);
 begin
 
 data_mem <= data_from_spi;
-address  <= std_logic_vector(word_cnt(DATA_MEM_WIDTH - 2 downto 0));
+address  <= std_logic_vector(word_cnt(DATA_MEM_WIDTH - 3 downto 0));
 word_cnt_incr <= word_cnt + 1;
 	
 combi : process(state, word_cnt, spi_finished, word_cnt_incr)
@@ -51,7 +52,8 @@ begin
 	data_to_spi <= (others => '0');
 	spi_settings <= '0';
 	spi_start <= '0';
-	we <= '0';
+	data_we <= '0';
+	instr_we <= '0';
 	n_word_cnt <= word_cnt;
 	n_state <= state;
 	done <= '0';
@@ -98,8 +100,9 @@ begin
 		when READ_DATA_4 =>
 			if(spi_finished = '1') then
 				n_word_cnt <= word_cnt_incr;
-				we <= '1';
-				if(word_cnt = "11111111111") then
+				data_we <= '1';
+				instr_we <= not word_cnt(9);
+				if(word_cnt = "01111111111") then
 					n_state <= IDLE;
 					spi_clear <= '1';
 				else

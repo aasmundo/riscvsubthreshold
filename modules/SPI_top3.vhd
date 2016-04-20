@@ -25,13 +25,14 @@ type state_t is (IDLE, ONE, TWO, THREE, FOUR, FIN);
 
 signal state, n_state : state_t;
 signal counter, n_counter : unsigned(2 downto 0);
-signal regs, reg_input, regs_shifted  : std_logic_vector(7 downto 0);
+signal regs, reg_input, regs_shifted  : std_logic_vector(7 downto 0);	  
+signal output_reg, next_bit : std_logic;
 signal n_sclk, sclk_i, reg_src, reg_we : std_logic;
 begin
 
 sclk <= sclk_i;
 data_out <= regs;
-mosi <= regs(7);
+mosi <= output_reg;
 regs_shifted <= regs(6 downto 0) & miso;
 
 state_combi : process(counter, state, regs_shifted, data_in, reg_src, start)
@@ -43,10 +44,11 @@ begin
 	reg_we <= '0';
 	byte_complete <= '0';
 	n_state <= state;
+	next_bit <= '0';
 	case (state) is
 		when IDLE =>
 			if(start = '1') then
-				n_state <= ONE;
+				n_state <= THREE;
 				reg_src <= '1';
 				reg_we <= '1';
 			end if;	
@@ -64,6 +66,7 @@ begin
 			end if;
 		when THREE =>
 			n_state <= FOUR;
+			next_bit <= '1';
 		when FOUR => 
 			n_state <= ONE;
 
@@ -104,6 +107,12 @@ begin
 		
 		if(reg_we = '1') then
 			regs <= reg_input;
+		end if;
+		
+		if(next_bit = '1') then
+			output_reg <= regs(7);
+		else
+			output_reg <= output_reg;
 		end if;
 		
 	end if;

@@ -14,6 +14,7 @@ entity memory is
 	rs2_src : in std_logic;
 	mem_write_width : in std_logic_vector(1 downto 0);
 	mem_we : in std_logic;
+	mem_re : in std_logic;
 	
 	is_branch : in std_logic;
 	funct3 : in std_logic_vector(2 downto 0);
@@ -32,8 +33,9 @@ entity memory is
 	
 	--data memory interface
 	bram_mem_be : out std_logic_vector(1 downto 0);
-	bram_addr : out std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+	bram_addr : out std_logic_vector(SPI_AND_DATA_MEM_WIDTH - 1 downto 0);
 	bram_we : out std_logic;
+	bram_re : out std_logic;
 	bram_data_in : out std_logic_vector(31 downto 0)
 	);
 end memory;
@@ -70,8 +72,9 @@ branch_out <= branch;
 
 
 bram_mem_be <= mem_write_width;
-bram_addr <= ALU_result(DATA_MEM_WIDTH - 1 downto 0);
+bram_addr <= ALU_result(SPI_AND_DATA_MEM_WIDTH - 1 downto 0);
 bram_we <= mem_we;
+bram_re <= mem_re;
 bram_data_in <= rs2_data; 
 	
 	

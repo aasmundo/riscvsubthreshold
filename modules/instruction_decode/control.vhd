@@ -9,6 +9,7 @@ entity control is
 	wb_src : out std_logic_vector(1 downto 0);
 	wb_we : out std_logic;
 	mem_we : out std_logic;
+	mem_re : out std_logic;
 	mem_write_width : out std_logic_vector(1 downto 0);
 	mem_load_unsigned : out std_logic;
 	is_branch : out std_logic;	  
@@ -36,13 +37,15 @@ begin
 	mem_load_unsigned <= funct3(2);
 	is_branch <= '0';
 	reg_or_PC <= '0';
-	is_jump <= '0';
+	is_jump <= '0';	 
+	mem_re <= '0';
 	
 	case opcode is
 		when "0100011" => 			  mem_we    <= '1';
 		when "0000011" => 
 						  			  wb_src    <= "01";
 						  			  wb_we     <= '1';
+									  mem_re    <= '1';
 		when "0110011" | "0010011" => wb_we     <= '1'; 
 		when "0110111" => 			  wb_we     <= '1'; --LUI
 		when "1100011" =>			  is_branch <= '1';

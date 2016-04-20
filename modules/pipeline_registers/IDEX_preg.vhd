@@ -28,12 +28,14 @@ entity IDEX_preg is
 		rd_in : in std_logic_vector(4 downto 0);
 		
 		mem_we_in : in std_logic;
+		mem_re_in : in std_logic;
 		mem_be_in : in std_logic_vector(1 downto 0); 
 		mem_load_unsigned_in : in std_logic;  
 		mem_load_unsigned_out : out std_logic;
 		wb_src_in : in std_logic_vector(1 downto 0);
 		wb_we_in  : in std_logic;
 		mem_we_out : out std_logic;
+		mem_re_out : out std_logic;
 		mem_be_out : out std_logic_vector(1 downto 0);
 		wb_src_out : out std_logic_vector(1 downto 0);
 		wb_we_out  : out std_logic;
@@ -64,11 +66,13 @@ begin
 		if(flush = '1') then
 			rd_out     <= "00000";
 			mem_we_out <= '0';
+			mem_re_out <= '0';
 			wb_we_out  <= '0';
 			is_branch_out  <= '0';
 			is_jump_out <= '0';
 			branched_out <= '0';
 		else
+			mem_re_out <= mem_re_in;
 			branched_out <= branched_in;
 			rd_out <= rd_in;
 			mem_we_out <= mem_we_in;

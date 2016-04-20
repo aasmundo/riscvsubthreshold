@@ -26,7 +26,9 @@ entity EXMEM_preg is
 	
 	-- MEM control --
 	mem_we_in : in std_logic;
+	mem_re_in : in std_logic;
 	mem_we_out : out std_logic;
+	mem_re_out : out std_logic;
 	mem_write_width_in : in std_logic_vector(1 downto 0);
 	mem_write_width_out : out std_logic_vector(1 downto 0);
 	is_branch_in : in std_logic;
@@ -61,6 +63,7 @@ begin
 		if(flush = '1') then
 			rd_we_out <= '0';
 			mem_we_out <= '0';
+			mem_re_out <= '0';
 			is_branch_out <= '0';
 			is_jump_out <= '0';
 			rd_out <= "00000";
@@ -71,6 +74,7 @@ begin
 			branched_out <= branched_in;
 			rd_we_out <= rd_we_in;
 			mem_we_out <= mem_we_in;
+			mem_re_out <= mem_re_in;
 			is_branch_out <= is_branch_in;
 			is_jump_out <= is_jump_in;
 			rd_out <= rd_in;
