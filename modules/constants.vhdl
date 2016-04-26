@@ -58,10 +58,12 @@ package constants is
 	constant DATA_MEM_WIDTH : integer := 11; 
 	constant SPI_AND_DATA_MEM_WIDTH : integer := DATA_MEM_WIDTH + 1;	
 	
-	constant SPI_MEMORY_MAP : std_logic_vector(	SPI_AND_DATA_MEM_WIDTH  - 3 downto 0) := x"FF" & "11";
+	constant RESERVED_ADDR_SPACE : std_logic_vector(SPI_AND_DATA_MEM_WIDTH  - 5 downto 0) := x"FF";
 	
-	constant SPI_MAP : std_logic := '1';
-	constant MEM_MAP : std_logic := '0'; 
+	constant SLEEP_SEL : std_logic_vector(1 downto 0) := "10";
+	constant TIME_SEL  : std_logic_vector(1 downto 0) := "01";
+	constant SPI_SEL   : std_logic_vector(1 downto 0) := "11";
+	constant MEM_SEL   : std_logic_vector(1 downto 0) := "00"; 
 	
 	--SPI--
 	constant SPI_START_OP    : std_logic_vector(1 downto 0) := "10";
