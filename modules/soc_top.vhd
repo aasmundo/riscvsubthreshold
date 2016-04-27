@@ -321,6 +321,7 @@ begin
 		data         => cpu_data_data_w, 
 		we           => sleep_we,
 		spi_finished => spi_finished,
+		spi_busy     => spi_busy,
 		sleep_type   => sleep_type,
 		sleep        => sleep_ctl
 		);

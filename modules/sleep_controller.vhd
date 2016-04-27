@@ -13,6 +13,7 @@ entity sleep_controller is
 		sleep_type   : in std_logic; 
 		we           : in std_logic;
 		spi_finished : in std_logic;
+		spi_busy     : in std_logic;
 		sleep        : out std_logic
 	);
 end sleep_controller; 
@@ -28,16 +29,19 @@ begin
 
 cnt_minus_one <= std_logic_vector(unsigned(cnt) - 1);
 
-combi : process(state, sleep_type, cnt, spi_finished, cnt_minus_one, data)
+combi : process(state, sleep_type, cnt, spi_finished, cnt_minus_one, data, spi_busy, we)
 begin
 	sleep_n <= '0';
 	cnt_n <= cnt;
 	state_n <= state;
 	case (state) is
 		when IDLE =>
-			if(we = '1') then
+			if(we = '1') then 
 				if(sleep_type = '1') then
-					state_n <= SPI_WAIT;
+					if(spi_busy = '1') then	
+						sleep_n <= '1';
+						state_n <= SPI_WAIT;
+					end if;
 				else
 					state_n <= TIME_WAIT;
 				end if;
@@ -50,7 +54,7 @@ begin
 				cnt_n <= cnt_minus_one;
 			end if;
 		when SPI_WAIT =>
-			if(spi_finished = '1') then
+			if(spi_finished = '1' or spi_busy = '0') then
 				state_n <= IDLE;
 			end if;
 			sleep_n <= '1';
