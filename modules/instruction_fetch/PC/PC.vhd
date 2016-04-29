@@ -32,6 +32,7 @@ use work.constants.all;
 entity PC is
 	port(clk, we, nreset 	: in std_logic;
 	PC_out 				: out std_logic_vector(PC_WIDTH - 1 downto 0);
+	PC_next             : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	PC_in				: in std_logic_vector(PC_WIDTH - 1 downto 0)	
 	);
 end PC;
@@ -42,7 +43,18 @@ architecture behave of PC is
 signal PC : std_logic_vector(PC_WIDTH - 1 downto 0);
 begin
 
-PC_out <= PC;
+combi : process(PC_in, PC, we)
+begin
+	case(we) is
+		when '1' =>
+			PC_next <= PC_in;
+		when '0' =>
+			PC_next <= PC;
+		when others =>
+			null;
+	end case;
+	PC_out <= PC;
+end process;
 
 --assert (PC(1) /= '0' or PC(0) /= '0') report "PC not aligned" severity failure;
 --assert (PC < x"800") report "PC more than 0x800" severity failure;

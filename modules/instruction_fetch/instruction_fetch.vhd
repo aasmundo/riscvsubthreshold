@@ -40,7 +40,7 @@ end instruction_fetch;
 
 architecture behave of instruction_fetch is
 signal PC_we : std_logic;
-signal PC_in, PC_out : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal PC_in, PC_out, PC_next : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal PC_incr : std_logic_vector(PC_WIDTH - 1 downto 0);
 signal SB_type_imm : std_logic_vector(11 downto 0);
 signal UJ_type_imm : std_logic_vector(19 downto 0);
@@ -58,7 +58,7 @@ current_PC <= PC_out;
 SB_type_imm <= instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8);
 UJ_type_imm <= instruction(31) & instruction(19 downto 12) & instruction(20) & instruction(30 downto 21); 
 branch_target_out <= control_target;
-imem_address <= PC_out(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+imem_address <= PC_next(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 
 combi : process(PC_incr, new_PC, control_transfer, UJ_type_imm, PC_in, PC_out, SB_type_imm, UJ_type_imm, instruction, control_target, branch_prediction, is_branch, JAL_opcode)
 
@@ -108,6 +108,7 @@ PC : entity work.PC port map(
 	we => PC_we,
 	nreset => nreset,
 	PC_in => PC_in,
+	PC_next => PC_next,
 	PC_out => PC_out
 	);
 
