@@ -15,8 +15,8 @@ end entity;
 
 
 architecture behave of soc_top_tb is
-constant hex_folder : String(1 to 51) := "C:\prosjektoppgave\riscvsubthreshold\tests\myTests\";
-constant number_of_tests : integer := 38;
+constant hex_folder : String(1 to 52) := "C:\prosjektoppgave\riscvsubthreshold\tests\newTests\";
+constant number_of_tests : integer := 40;
 type mem_t is array(0 to ((2**PC_WIDTH) - 1)) of std_logic_vector(31 downto 0);
 type tests_t is array(0 to number_of_tests - 1) of mem_t;
 signal tests : tests_t;
@@ -64,7 +64,7 @@ signal cs3       :  std_logic;
 signal cs4       :  std_logic;
 begin
 
-clk <= not clk after 62500 ps;
+clk <= not clk after 31250 ps;
 	
 soc : entity work.soc_top port map(
 
@@ -124,7 +124,11 @@ tests(33) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sw.hex");
 tests(34) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-xor.hex");
 tests(35) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-xori.hex");
 tests(36) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-add.hex");
-tests(0) <= ocram_ReadMemFile(hex_folder & "spi_test_by_hand.hex");
+--tests(0) <= ocram_ReadMemFile(hex_folder & "asoc_man_link.hex");
+tests(37) <= ocram_ReadMemFile(hex_folder & "sleep_test.hex");
+tests(38) <= ocram_ReadMemFile(hex_folder & "spi_transfer_test.hex");
+tests(0) <= ocram_ReadMemFile(hex_folder & "rdcycles_test.hex");
+
 wait;
 end process;
 
@@ -157,7 +161,11 @@ begin
 			wait until sclk = '0';
 			miso <= tests(testnum)(i / 32)(31 - (i mod 32));
 		end loop;
-		wait until (pass = '1' or fail = '1');
+		wait until cs1 = '1';
+		while (pass = '0' and fail = '0') loop
+			miso <= not mosi;
+			wait for 5 ns;
+		end loop;
 		assert ((fail /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" FAIL" severity failure;
 		assert ((pass /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" PASS" severity note;
 		nreset <= '0';
