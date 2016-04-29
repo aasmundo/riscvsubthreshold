@@ -44,6 +44,7 @@ begin
 					end if;
 				else
 					state_n <= TIME_WAIT;
+					cnt_n <= data;
 				end if;
 			end if;			
 		when TIME_WAIT =>
