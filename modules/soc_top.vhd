@@ -80,9 +80,10 @@ architecture behave of soc_top is
 	--memory
 	signal instr_we         : std_logic;
 	signal instr_data_w		: std_logic_vector(31 downto 0);
-	signal instr_data_r		: std_logic_vector(31 downto 0);
+	signal instr_data_r, instr_data_r_test	: std_logic_vector(31 downto 0);
 	signal instr_addr		: std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	signal instr_re         : std_logic;
+	signal instr_mem_idle   : std_logic;
 	
 	signal data_we          : std_logic; 
 	signal data_mem_we      : std_logic;
@@ -250,7 +251,9 @@ begin
 	if(d_clk'event and d_clk = '1') then
 	mem_data_seq <= mem_data_n;
 	mem_data_src <= mem_data_src_n;
+	--assert (instr_data_r = instr_data_r_test or cpu_sleep = '1') report "instruction mem difference" severity failure;
 	end if;
+	
 	end process;
 	
 	
@@ -400,8 +403,21 @@ begin
 		we	=> instr_we,
 		address  =>  instr_addr,
 		data_in  => instr_data_w,
-		data_out => instr_data_r
+		data_out => instr_data_r_test
 		);
+		
+	instruction_memory2 : entity work.instr_mem_wrap generic map(
+		address_width => INSTRUCTION_MEM_WIDTH)
+	port map(
+		d_clk => d_clk,
+		clk   => clk,
+		reset_pulse_generator => sync_reset,
+		write_en  => instr_we,
+		Address   =>  instr_addr,
+		write_data_input  => instr_data_w,
+		read_data => instr_data_r,
+		idle => instr_mem_idle
+		);	
 	
 	data_memory : bram generic map(
 		address_width => DATA_MEM_WIDTH)
