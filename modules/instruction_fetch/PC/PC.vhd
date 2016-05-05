@@ -53,6 +53,7 @@ begin
 		when others =>
 			null;
 	end case;
+
 	PC_out <= PC;
 end process;
 
