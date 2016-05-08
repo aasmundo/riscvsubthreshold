@@ -11,6 +11,8 @@ entity spi_startup is
 	clk : in std_logic;
 	nreset : in std_logic;
 	
+	--skip_startup : in std_logic;
+	
 	--SPI controller interface--
 	data_to_spi : out std_logic_vector(31 downto 0);
 	data_from_spi : in std_logic_vector(31 downto 0);
@@ -130,7 +132,11 @@ begin
 	if(clk'event and clk = '1') then
 		if(nreset = '0') then
 			word_cnt <= (others => '0');
-			state <= STARTUP_WAIT;
+			--if(skip_startup = '0') then
+				state <= STARTUP_WAIT;
+			--else
+			--	state <= IDLE;
+			--end if;
 			data_to_spi <= (others => '0');
 			spi_settings <= '0';
 			spi_start <= '0';
