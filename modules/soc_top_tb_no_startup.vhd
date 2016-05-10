@@ -15,11 +15,14 @@ end entity;
 
 
 architecture behave of soc_top_tb is
-constant hex_folder : String(1 to 52) := "C:\prosjektoppgave\riscvsubthreshold\tests\newTests\";
+constant test_folder : String(1 to 52) :=  "C:\prosjektoppgave\riscvsubthreshold\tests\newTests\";
+constant modules_folder : String(1 to 57) := "C:\prosjektoppgave\riscvsubthreshold\modules\settings.hex";
 constant number_of_tests : integer := 40;
+signal begin_test, last_test : integer;
 type mem_t is array(0 to ((2**PC_WIDTH) - 1)) of std_logic_vector(31 downto 0);
 type tests_t is array(0 to number_of_tests - 1) of mem_t;
 signal tests : tests_t;
+signal settings : mem_t; --0: begin_test, 1: last_test 
 type spi_state_t is (NOT_SELECTED, INSTRUCTION, WRITE_SETTINGS, ADDRESS, READ);
 
 impure function ocram_ReadMemFile(FileName : STRING) return mem_t is
@@ -157,48 +160,49 @@ data_memory : entity work.data_mem_sram_model generic map(
 
 	
 process
-begin 
-tests(1) <= ocram_ReadMemFile(hex_folder & "super_simple_test.hex");	  --pass
-tests(14) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-addi.hex");	  --pass
-tests(2) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-and.hex");		 --pass
-tests(3) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-andi.hex");		 --pass
-tests(4) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-auipc.hex");
-tests(5) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-beq.hex");		--pass
-tests(6) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-bge.hex"); 		--pass
-tests(7) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-bgeu.hex");		--pass
-tests(8) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-blt.hex");	   --pass
-tests(9) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-bltu.hex");	   --pass
-tests(10) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-bne.hex");
-tests(11) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-j.hex");
-tests(12) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-jal.hex");
-tests(13) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-jalr.hex");
-tests(23) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lb.hex");
-tests(15) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lbu.hex");
-tests(16) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lh.hex");
-tests(17) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lhu.hex");
-tests(18) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lui.hex");
-tests(19) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-lw.hex");
-tests(20) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-or.hex");
-tests(21) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-ori.hex");
-tests(22) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sb.hex");
-tests(37) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sh.hex");
-tests(24) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-simple.hex");
-tests(25) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sll.hex");
-tests(26) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-slt.hex");
-tests(27) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-slti.hex");
-tests(28) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sra.hex");
-tests(29) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-srai.hex");
-tests(30) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-srl.hex");
-tests(31) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-srli.hex");
-tests(32) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sub.hex");
-tests(33) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-sw.hex");
-tests(34) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-xor.hex");
-tests(35) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-xori.hex");
-tests(36) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-add.hex");
---tests(0) <= ocram_ReadMemFile(hex_folder & "asoc_man_link.hex");
-tests(38) <= ocram_ReadMemFile(hex_folder & "sleep_test.hex");
-tests(0) <= ocram_ReadMemFile(hex_folder & "spi_transfer_test.hex");
---tests(0) <= ocram_ReadMemFile(hex_folder & "rdcycles_test.hex");
+begin
+settings <= ocram_ReadMemFile(MODULES_FOLDER);
+tests(1) <= ocram_ReadMemFile(TEST_FOLDER & "super_simple_test.hex");	  --pass
+tests(14) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-addi.hex");	  --pass
+tests(2) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-and.hex");		 --pass
+tests(3) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-andi.hex");		 --pass
+tests(4) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-auipc.hex");
+tests(5) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-beq.hex");		--pass
+tests(6) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-bge.hex"); 		--pass
+tests(7) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-bgeu.hex");		--pass
+tests(8) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-blt.hex");	   --pass
+tests(9) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-bltu.hex");	   --pass
+tests(10) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-bne.hex");
+tests(11) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-j.hex");
+tests(12) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-jal.hex");
+tests(13) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-jalr.hex");
+tests(23) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lb.hex");
+tests(15) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lbu.hex");
+tests(16) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lh.hex");
+tests(17) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lhu.hex");
+tests(18) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lui.hex");
+tests(19) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lw.hex");
+tests(20) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-or.hex");
+tests(21) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-ori.hex");
+tests(22) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sb.hex");
+tests(37) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sh.hex");
+tests(24) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-simple.hex");
+tests(25) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sll.hex");
+tests(26) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-slt.hex");
+tests(27) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-slti.hex");
+tests(28) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sra.hex");
+tests(29) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-srai.hex");
+tests(30) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-srl.hex");
+tests(31) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-srli.hex");
+tests(32) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sub.hex");
+tests(33) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sw.hex");
+tests(34) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-xor.hex");
+tests(35) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-xori.hex");
+tests(36) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-add.hex");
+--tests(0) <= ocram_ReadMemFile(TEST_FOLDER & "asoc_man_link.hex");
+tests(38) <= ocram_ReadMemFile(TEST_FOLDER & "sleep_test.hex");
+tests(0) <= ocram_ReadMemFile(TEST_FOLDER & "spi_transfer_test.hex");
+--tests(0) <= ocram_ReadMemFile(TEST_FOLDER & "rdcycles_test.hex");
 
 wait;
 end process;
@@ -213,7 +217,7 @@ begin
 	nreset <= '0';
 	wait for 5 us;
 	nreset <= '1'; 
-	for testnum in 0 to number_of_tests - 1 loop 
+	for testnum in to_integer(unsigned(settings(0))) to to_integer(unsigned(settings(1))) loop 
 		wait until d_clk_out'event and d_clk_out = '1';
 		ns_passed := 0;
 		for i in 1 to ((2**DATA_MEM_WIDTH) / 4)  loop
@@ -239,6 +243,7 @@ begin
 		assert ((pass /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" PASS" severity note;
 		assert (ns_passed < 1000000) report "test " & integer'image(testnum) &" timed out" severity failure;
 		nreset <= '0';
+		assert (testnum <= to_integer(unsigned(settings(1))) - 1) report "tests finished" severity failure;
 		wait for 3 us;
 		nreset <= '1';
 	end loop;
