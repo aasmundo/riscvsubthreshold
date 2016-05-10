@@ -8,19 +8,20 @@ use work.constants.all;
 
 entity soc_top is
 	port(
-		clk       : in std_logic;
-		nreset    : in std_logic;
+		clk         : in std_logic;
+		nreset      : in std_logic;
+
 		--testbench
-		pass      : out std_logic;
-		fail      : out std_logic;
+		pass        : out std_logic;
+		fail        : out std_logic;
 		--spi--
-		sclk      : out std_logic;
-		miso      : in  std_logic;
-		mosi      : out std_logic;
-		cs1       : out std_logic;
-		cs2       : out std_logic;
-		cs3       : out std_logic;
-		cs4       : out std_logic
+		sclk        : out std_logic;
+		miso        : in  std_logic;
+		mosi        : out std_logic;
+		cs1         : out std_logic;
+		cs2         : out std_logic;
+		cs3         : out std_logic;
+		cs4         : out std_logic
 		);
 end entity;
 
@@ -80,9 +81,10 @@ architecture behave of soc_top is
 	--memory
 	signal instr_we         : std_logic;
 	signal instr_data_w		: std_logic_vector(31 downto 0);
-	signal instr_data_r		: std_logic_vector(31 downto 0);
+	signal instr_data_r	: std_logic_vector(31 downto 0);
 	signal instr_addr		: std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	signal instr_re         : std_logic;
+	signal instr_mem_idle   : std_logic;
 	
 	signal data_we          : std_logic; 
 	signal data_mem_we      : std_logic;
@@ -95,7 +97,7 @@ architecture behave of soc_top is
 	signal data_mem_data_r  : std_logic_vector(31 downto 0); 
 	signal data_mem_re      : std_logic;
 	signal data_busy        : std_logic;
-	
+	signal data_mem_idle    : std_logic;
 	
 	signal startup_instr_addr : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	signal startup_data_addr  : std_logic_vector(SPI_AND_DATA_MEM_WIDTH - 1 downto 0);
@@ -251,6 +253,7 @@ begin
 	mem_data_seq <= mem_data_n;
 	mem_data_src <= mem_data_src_n;
 	end if;
+	
 	end process;
 	
 	
@@ -358,7 +361,7 @@ begin
 	startup_controller : entity work.spi_startup port map(
 		clk        => d_clk,
 		nreset     => sync_reset,
-		
+
 		--SPI controller interface--
 		data_to_spi => startup_spi_data_in,
 		data_from_spi => startup_spi_data_out,
@@ -392,27 +395,33 @@ begin
 		nreset => clk_reset,
 		d_clk => d_clk	
 		);
-	
-	instruction_memory : SP_32bit generic map(
+		
+	instruction_memory : entity work.instr_mem_wrap generic map(
 		address_width => INSTRUCTION_MEM_WIDTH)
 	port map(
-		clk => d_clk,
-		we	=> instr_we,
-		address  =>  instr_addr,
-		data_in  => instr_data_w,
-		data_out => instr_data_r
-		);
-	
-	data_memory : bram generic map(
-		address_width => DATA_MEM_WIDTH)
-	port map(
-		clk => d_clk,
-		byte_enable => data_be,
-		address => data_addr(DATA_MEM_WIDTH - 1 downto 0),
-		we => data_mem_we,
-		write_data => data_data_w,
-		read_data => data_mem_data_r
+		d_clk => d_clk,
+		clk   => clk,
+		reset_pulse_generator => sync_reset,
+		write_en  => instr_we,
+		Address   =>  instr_addr,
+		write_data_input  => instr_data_w,
+		read_data => instr_data_r,
+		idle => instr_mem_idle
 		);	
+	
+	data_memory : entity work.data_mem_wrap generic map(
+		address_width => INSTRUCTION_MEM_WIDTH)
+	port map(
+		d_clk => d_clk,
+		clk   => clk,
+		be    => data_be,
+		reset_pulse_generator => sync_reset,
+		write_en  => data_mem_we,
+		Address   =>  data_addr(DATA_MEM_WIDTH - 1 downto 0),
+		write_data_input  => data_data_w,
+		read_data => data_mem_data_r,
+		idle => data_mem_idle
+		);
 	
 	
 	AAsmund_RISC : entity work.top	port map
