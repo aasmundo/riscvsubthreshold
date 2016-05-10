@@ -12,7 +12,10 @@ port(
 	write_data_input      : in std_logic_vector(31 downto 0);
 	write_en              : in std_logic;
 	reset_pulse_generator : in std_logic;
-	idle                  : out std_logic
+	idle                  : out std_logic;
+	
+	write_all_en          : in std_logic;
+	write_all_data        : in std_logic_vector(((2**address_width) * 8 ) - 1 downto 0)
 );
 end instr_mem_sram_model;
 
@@ -85,6 +88,10 @@ begin
 	if(clk = '1' and clk'event) then
 		if(reset_pulse_generator = '0') then
 			state <= 0;
+		elsif(write_all_en = '1') then
+			for i in 1 to (2**address_width) loop
+				mem(i-1) <= write_all_data((i * 8) - 1 downto ((i-1) * 8));	
+			end loop;	
 		else
 			if(mem_we = '1') then
 				mem(to_integer(unsigned(address)))     <= input_reg(7 downto 0);

@@ -8,20 +8,39 @@ use work.constants.all;
 
 entity soc_top is
 	port(
-		clk         : in std_logic;
-		nreset      : in std_logic;
-
+		clk          : in std_logic;
+		nreset       : in std_logic;
+	    
 		--testbench
-		pass        : out std_logic;
-		fail        : out std_logic;
+		pass         : out std_logic;
+		fail         : out std_logic;
 		--spi--
-		sclk        : out std_logic;
-		miso        : in  std_logic;
-		mosi        : out std_logic;
-		cs1         : out std_logic;
-		cs2         : out std_logic;
+		sclk         : out std_logic;
+		miso         : in  std_logic;
+		mosi         : out std_logic;
+		cs1          : out std_logic;
+		cs2          : out std_logic;
 		cs3         : out std_logic;
-		cs4         : out std_logic
+		cs4         : out std_logic;
+		
+		--reroute for fast sim--
+		skip_startup : in std_logic;
+		d_clk_out    : out std_logic;
+		--instr-mem-reroute--
+		instr_mem_write_en : out std_logic;
+		instr_mem_Address  : out std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+		instr_mem_write_data_input : out std_logic_vector(31 downto 0);
+		instr_mem_read_data	: in std_logic_vector(31 downto 0);
+		instr_mem_reset_pulse_generator : out std_logic;
+		instr_mem_idle : in std_logic;
+		--instr-mem-reroute--
+		data_mem_write_en : out std_logic;
+		data_mem_Address  : out std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+		data_mem_write_data_input : out std_logic_vector(31 downto 0);
+		data_mem_read_data	: in std_logic_vector(31 downto 0);
+		data_mem_be : out std_logic_vector(1 downto 0);
+		data_mem_reset_pulse_generator : out std_logic;
+		data_mem_idle : in std_logic
 		);
 end entity;
 
@@ -84,7 +103,8 @@ architecture behave of soc_top is
 	signal instr_data_r	: std_logic_vector(31 downto 0);
 	signal instr_addr		: std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	signal instr_re         : std_logic;
-	signal instr_mem_idle   : std_logic;
+	signal instr_idle       : std_logic;
+
 	
 	signal data_we          : std_logic; 
 	signal data_mem_we      : std_logic;
@@ -97,7 +117,7 @@ architecture behave of soc_top is
 	signal data_mem_data_r  : std_logic_vector(31 downto 0); 
 	signal data_mem_re      : std_logic;
 	signal data_busy        : std_logic;
-	signal data_mem_idle    : std_logic;
+	signal data_idle        : std_logic;
 	
 	signal startup_instr_addr : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
 	signal startup_data_addr  : std_logic_vector(SPI_AND_DATA_MEM_WIDTH - 1 downto 0);
@@ -143,10 +163,13 @@ architecture behave of soc_top is
 	
 	--CPU
 	signal cpu_sleep : std_logic;
+	--testsignal
+	signal mem_re_last : std_logic;
 	
 begin
 	pass <= pass_i_reg;
 	fail <= fail_i_reg;
+	d_clk_out <= d_clk;
 	
 	cpu_sleep <= (not startup_done) or (pass_i_reg or fail_i_reg) or sleep_ctl;
 	
@@ -252,6 +275,7 @@ begin
 	if(d_clk'event and d_clk = '1') then
 	mem_data_seq <= mem_data_n;
 	mem_data_src <= mem_data_src_n;
+	mem_re_last <= data_mem_re;
 	end if;
 	
 	end process;
@@ -360,7 +384,8 @@ begin
 	
 	startup_controller : entity work.spi_startup port map(
 		clk        => d_clk,
-		nreset     => sync_reset,
+		nreset     => sync_reset, 
+		skip_startup => skip_startup,
 
 		--SPI controller interface--
 		data_to_spi => startup_spi_data_in,
@@ -406,7 +431,14 @@ begin
 		Address   =>  instr_addr,
 		write_data_input  => instr_data_w,
 		read_data => instr_data_r,
-		idle => instr_mem_idle
+		idle => instr_idle,
+		--rerouting for no startup--
+		reroute_write_en => instr_mem_write_en,
+		reroute_Address  => instr_mem_Address,
+		reroute_write_data_input => instr_mem_write_data_input,
+		reroute_read_data => instr_mem_read_data,
+		reroute_reset_pulse_generator => instr_mem_reset_pulse_generator,
+		reroute_idle => instr_mem_idle
 		);	
 	
 	data_memory : entity work.data_mem_wrap generic map(
@@ -420,7 +452,14 @@ begin
 		Address   =>  data_addr(DATA_MEM_WIDTH - 1 downto 0),
 		write_data_input  => data_data_w,
 		read_data => data_mem_data_r,
-		idle => data_mem_idle
+		idle => data_idle,
+		--rerouting for no startup--
+		reroute_write_en => data_mem_write_en,
+		reroute_Address  => data_mem_Address,
+		reroute_write_data_input => data_mem_write_data_input,
+		reroute_read_data => data_mem_read_data,
+		reroute_reset_pulse_generator => data_mem_reset_pulse_generator,
+		reroute_idle => data_mem_idle
 		);
 	
 	

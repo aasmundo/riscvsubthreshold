@@ -13,7 +13,10 @@ port(
 	write_data_input      : in std_logic_vector(31 downto 0);
 	write_en              : in std_logic;
 	reset_pulse_generator : in std_logic;
-	idle                  : out std_logic
+	idle                  : out std_logic;
+	
+	write_all_en          : in std_logic;
+	write_all_data        : in std_logic_vector(((2**address_width) * 8 ) - 1 downto 0)
 );
 end data_mem_sram_model;
 
@@ -60,10 +63,11 @@ begin
 		when 15 =>
 			idle_i <= '1';
 			state_n <= 0;
-		when 16|17|18|19|20|21|22|23|24|25|26|27|28|29 =>
+		when 16|17|18|19|20|21|22|23|24|25|26|27|28 =>
 			null;
+		when 29 =>
+			mem_we <= '1';			
 		when 30 =>
-			mem_we <= '1';
 			idle_i <= '1';
 			state_n <= 0;
 		when others =>
@@ -73,22 +77,22 @@ end process;
 	
 
 
-combi2 : process(address, mem, be)
+combi2 : process(address_input_reg, mem, be)
 begin
 	case (be) is
 			when "00" =>
-				data_out_n(7 downto 0)   <= mem(to_integer(unsigned(address)));
+				data_out_n(7 downto 0)   <= mem(to_integer(unsigned(address_input_reg)));
 				data_out_n(31 downto 8)  <= x"000000";
 			when "01" =>  
-				data_out_n(7 downto 0)   <= mem(to_integer(unsigned(address)));
-				data_out_n(15 downto 8)  <= mem(to_integer(unsigned(address) + 1));
+				data_out_n(7 downto 0)   <= mem(to_integer(unsigned(address_input_reg)));
+				data_out_n(15 downto 8)  <= mem(to_integer(unsigned(address_input_reg) + 1));
 				data_out_n(31 downto 16) <= x"0000";
 			when others =>
 				data_out_n <= 
-					 mem(to_integer(unsigned(address) + 3)) &
-					 mem(to_integer(unsigned(address) + 2)) &
-					 mem(to_integer(unsigned(address) + 1)) &
-					 mem(to_integer(unsigned(address)));
+					 mem(to_integer(unsigned(address_input_reg) + 3)) &
+					 mem(to_integer(unsigned(address_input_reg) + 2)) &
+					 mem(to_integer(unsigned(address_input_reg) + 1)) &
+					 mem(to_integer(unsigned(address_input_reg)));
 		end case;
 end process;
 
@@ -97,20 +101,24 @@ begin
 	if(clk = '1' and clk'event) then
 		if(reset_pulse_generator = '0') then
 			state <= 0;
+		elsif(write_all_en = '1') then
+			for i in 1 to (2**address_width) loop
+				mem(i-1) <= write_all_data((i * 8) - 1 downto ((i-1) * 8));	
+			end loop;
 		else
 			if(mem_we = '1') then
 				case (be) is
 				when "00" =>
-					mem(to_integer(unsigned(address)))     <= write_data_input(7 downto 0);
+					mem(to_integer(unsigned(address_input_reg)))     <= input_reg(7 downto 0);
 				when "01" => 
-					mem(to_integer(unsigned(address)))     <= write_data_input(7 downto 0);
-					mem(to_integer(unsigned(address) + 1)) <= write_data_input(15 downto 8);
+					mem(to_integer(unsigned(address_input_reg)))     <= input_reg(7 downto 0);
+					mem(to_integer(unsigned(address_input_reg) + 1)) <= input_reg(15 downto 8);
 					
 				when others =>
-					mem(to_integer(unsigned(address)))     <= write_data_input(7 downto 0);
-					mem(to_integer(unsigned(address) + 1)) <= write_data_input(15 downto 8);
-					mem(to_integer(unsigned(address) + 2)) <= write_data_input(23 downto 16);
-					mem(to_integer(unsigned(address) + 3)) <= write_data_input(31 downto 24);
+					mem(to_integer(unsigned(address_input_reg)))     <= input_reg(7 downto 0);
+					mem(to_integer(unsigned(address_input_reg) + 1)) <= input_reg(15 downto 8);
+					mem(to_integer(unsigned(address_input_reg) + 2)) <= input_reg(23 downto 16);
+					mem(to_integer(unsigned(address_input_reg) + 3)) <= input_reg(31 downto 24);
 			end case;
 			end if;
 			if(output_reg_we = '1') then

@@ -56,12 +56,37 @@ signal pass      :  std_logic;
 signal fail      :  std_logic;
 --spi--
 signal sclk      :  std_logic;
-signal miso      :   std_logic;
+signal miso      :  std_logic;
 signal mosi      :  std_logic;
 signal cs1       :  std_logic;
 signal cs2       :  std_logic;
 signal cs3       :  std_logic;
 signal cs4       :  std_logic;
+--reroute for fast sim--
+signal skip_startup : std_logic := '1';
+signal d_clk_out    : std_logic;
+--instr-mem-reroute--
+signal instr_mem_write_en : std_logic;
+signal instr_mem_Address  : std_logic_vector(INSTRUCTION_MEM_WIDTH - 1 downto 0);
+signal instr_mem_write_data_input : std_logic_vector(31 downto 0);
+signal instr_mem_read_data	: std_logic_vector(31 downto 0);
+signal instr_mem_reset_pulse_generator : std_logic;
+signal instr_mem_idle : std_logic;
+--instr-mem-reroute--
+signal data_mem_write_en : std_logic;
+signal data_mem_Address  : std_logic_vector(DATA_MEM_WIDTH - 1 downto 0);
+signal data_mem_write_data_input : std_logic_vector(31 downto 0);
+signal data_mem_read_data	: std_logic_vector(31 downto 0);
+signal data_mem_be : std_logic_vector(1 downto 0);
+signal data_mem_reset_pulse_generator : std_logic;
+signal data_mem_idle : std_logic;
+--instr-mem-fast-write--
+signal instr_mem_write_all_data : std_logic_vector(((2**INSTRUCTION_MEM_WIDTH) * 8 ) - 1 downto 0);
+signal instr_mem_write_all_en   : std_logic;
+--data-mem-fast-write--
+signal data_mem_write_all_data : std_logic_vector(((2**DATA_MEM_WIDTH) * 8 ) - 1 downto 0);
+signal data_mem_write_all_en   : std_logic;
+
 begin
 
 clk <= not clk after 31250 ps;
@@ -70,7 +95,7 @@ soc : entity work.soc_top port map(
 
 	clk       => clk,
 	nreset    => nreset,
-	skip_startup => '1',
+	
 	--testbench
 	pass      => pass,
 	fail      => fail,
@@ -81,10 +106,55 @@ soc : entity work.soc_top port map(
 	cs1       => cs1,
 	cs2       => cs2,
 	cs3       => cs3,
-	cs4       => cs4
-	); 
-
+	cs4       => cs4,	
 	
+	skip_startup => '1',
+	d_clk_out => d_clk_out,
+	instr_mem_write_en => instr_mem_write_en,
+	instr_mem_Address  => instr_mem_Address,
+	instr_mem_write_data_input => instr_mem_write_data_input,
+	instr_mem_read_data => instr_mem_read_data,
+	instr_mem_reset_pulse_generator => instr_mem_reset_pulse_generator,
+	instr_mem_idle => instr_mem_idle,
+	--instr-mem-reroute--
+	data_mem_write_en => data_mem_write_en,
+	data_mem_Address  => data_mem_Address,
+	data_mem_write_data_input => data_mem_write_data_input,
+	data_mem_read_data => data_mem_read_data,
+	data_mem_be => data_mem_be,
+	data_mem_reset_pulse_generator => data_mem_reset_pulse_generator,
+	data_mem_idle => data_mem_idle
+	); 
+instruction_memory : entity work.instr_mem_sram_model generic map(
+		address_width => INSTRUCTION_MEM_WIDTH)
+	port map(
+		clk => clk,
+		write_en => instr_mem_write_en,
+		Address  =>  instr_mem_Address,
+		write_data_input  => instr_mem_write_data_input,
+		read_data => instr_mem_read_data,
+		reset_pulse_generator => instr_mem_reset_pulse_generator,
+		idle => instr_mem_idle,
+		write_all_en => instr_mem_write_all_en,
+		write_all_data => instr_mem_write_all_data
+		);
+	
+data_memory : entity work.data_mem_sram_model generic map(
+		address_width => DATA_MEM_WIDTH)
+	port map(
+		clk => clk,
+		be  => data_mem_be,
+		write_en => data_mem_write_en,
+		Address  =>  data_mem_Address,
+		write_data_input  => data_mem_write_data_input,
+		read_data => data_mem_read_data,
+		reset_pulse_generator => data_mem_reset_pulse_generator,
+		idle => data_mem_idle,
+		write_all_en => data_mem_write_all_en,
+		write_all_data => data_mem_write_all_data
+	);
+
+
 	
 process
 begin 
@@ -126,9 +196,9 @@ tests(34) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-xor.hex");
 tests(35) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-xori.hex");
 tests(36) <= ocram_ReadMemFile(hex_folder & "rv32ui-p-add.hex");
 --tests(0) <= ocram_ReadMemFile(hex_folder & "asoc_man_link.hex");
-tests(37) <= ocram_ReadMemFile(hex_folder & "sleep_test.hex");
+tests(38) <= ocram_ReadMemFile(hex_folder & "sleep_test.hex");
 tests(0) <= ocram_ReadMemFile(hex_folder & "spi_transfer_test.hex");
-tests(38) <= ocram_ReadMemFile(hex_folder & "rdcycles_test.hex");
+--tests(0) <= ocram_ReadMemFile(hex_folder & "rdcycles_test.hex");
 
 wait;
 end process;
@@ -136,39 +206,38 @@ end process;
 process
 variable status_check_seq : std_logic_vector(0 to 15) := "00000101" & "00000000";
 variable start_read_seq : std_logic_vector(0 to 23) := "00000011" & x"0000";
+variable ns_passed : integer := 0;
 begin
 	nreset <= '1';
 	wait for 5 us;
 	nreset <= '0';
 	wait for 5 us;
 	nreset <= '1'; 
-	for testnum in 0 to number_of_tests - 1 loop
-		wait until cs1 = '0';
-		miso <= '0';
-		for j in 0 to status_check_seq'length - 1 loop	
-			wait until sclk = '1';
-			assert (cs1 = '0') report "chip select not asserted in startup check" severity failure;
-			assert (mosi = status_check_seq(j)) report "wrong startup sequence" severity failure;		
-		end loop; 
-		wait until cs1 = '1';
-		for j in 0 to start_read_seq'length - 1 loop	
-			wait until sclk = '1';
-			assert (cs1 = '0') report "chip select not asserted in start read check" severity failure;
-			assert (mosi = start_read_seq(j)) report "wrong startup sequence" severity failure;		
+	for testnum in 0 to number_of_tests - 1 loop 
+		wait until d_clk_out'event and d_clk_out = '1';
+		ns_passed := 0;
+		for i in 1 to ((2**DATA_MEM_WIDTH) / 4)  loop
+			data_mem_write_all_data((i*32) - 1 downto (i-1) * 32)  <= tests(testnum)(i+511);
 		end loop;
-	
-		for i in 0 to 32767 loop
-			assert (cs1 = '0') report "chip select not asserted while reading program" severity failure;
-			wait until sclk = '0';
-			miso <= tests(testnum)(i / 32)(31 - (i mod 32));
+		for i in 1 to ((2**INSTRUCTION_MEM_WIDTH) / 4) loop
+			instr_mem_write_all_data((i*32) - 1 downto (i-1) * 32) <= tests(testnum)(i-1);
 		end loop;
-		wait until cs1 = '1';
-		while (pass = '0' and fail = '0') loop
+		data_mem_write_all_en <= '1';
+		instr_mem_write_all_en <= '1';
+		wait until d_clk_out'event and d_clk_out = '1';
+		data_mem_write_all_en <= '0';
+		instr_mem_write_all_en <= '0';
+		nreset <= '0';
+		wait until d_clk_out'event and d_clk_out = '1';
+		nreset <= '1';
+		while (pass = '0' and fail = '0' and ns_passed < 1000000) loop
 			miso <= not mosi;
 			wait for 5 ns;
+			ns_passed := ns_passed + 5;
 		end loop;
 		assert ((fail /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" FAIL" severity failure;
 		assert ((pass /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" PASS" severity note;
+		assert (ns_passed < 1000000) report "test " & integer'image(testnum) &" timed out" severity failure;
 		nreset <= '0';
 		wait for 3 us;
 		nreset <= '1';

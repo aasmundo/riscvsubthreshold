@@ -14,7 +14,18 @@ entity data_mem_wrap is
 	write_data_input         : in std_logic_vector(31 downto 0);
 	write_en                 : in std_logic;
 	reset_pulse_generator    : in std_logic;
-	idle                     : out std_logic
+	idle                     : out std_logic;
+	
+	
+	--memory reroute for no startup--
+	reroute_write_en : out std_logic;
+	reroute_Address  : out std_logic_vector(address_width - 1 downto 0);
+	reroute_write_data_input  : out std_logic_vector(31 downto 0);
+	reroute_read_data : in std_logic_vector(31 downto 0);
+	reroute_be : out std_logic_vector(1 downto 0);
+	reroute_reset_pulse_generator : out std_logic;
+	reroute_idle : in std_logic		
+
 	);
 end data_mem_wrap;
 
@@ -33,7 +44,8 @@ end function; -- function reverse_vector
 
 signal Address_reg          : std_logic_vector(address_width - 1 downto 0);
 signal write_data_input_reg : std_logic_vector(31 downto 0);
-signal output   : std_logic_vector(31 downto 0);
+signal be_reg       : std_logic_vector(1 downto 0);
+signal write_en_reg : std_logic;
 begin
 
 	
@@ -47,21 +59,20 @@ begin
 	if(d_clk'event and d_clk = '1') then
 		Address_reg <= Address;
 		write_data_input_reg <= write_data_input;
-		read_data <= output;
+		be_reg <= be;  
+		write_en_reg <= write_en;
 	end if;
 end process;
 
-instruction_memory : entity work.data_mem_sram_model generic map(
-		address_width => address_width)
-	port map(
-		clk => clk,
-		be  => be,
-		write_en => write_en,
-		Address  =>  Address,
-		write_data_input  => write_data_input,
-		read_data => output,
-		reset_pulse_generator => reset_pulse_generator,
-		idle => idle
-		);
+
+
+
+	reroute_be  <= be_reg;
+	reroute_write_en <= write_en_reg;
+	reroute_Address  <=  Address_reg;
+	reroute_write_data_input  <= write_data_input_reg;
+	read_data <= reroute_read_data;
+	reroute_reset_pulse_generator <= reset_pulse_generator;
+	idle <= reroute_idle;
 
 end behave;
