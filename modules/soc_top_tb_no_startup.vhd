@@ -9,20 +9,23 @@ library work;
 use work.constants.all;
 
 
-entity soc_top_tb is
+entity soc_top_tb_no_startup is
+	port(
+	pass_out, fail_out : out std_logic --send pass and fail to output because the simulator will optimize them away otherwise
+	);
 end entity;
 
 
 
-architecture behave of soc_top_tb is
+architecture behave of soc_top_tb_no_startup is
 constant test_folder : String(1 to 52) :=  "C:\prosjektoppgave\riscvsubthreshold\tests\newTests\";
 constant modules_folder : String(1 to 57) := "C:\prosjektoppgave\riscvsubthreshold\modules\settings.hex";
 constant number_of_tests : integer := 40;
-signal begin_test, last_test : integer;
+signal begin_test : integer := 0; 
+signal last_test  : integer := 37;
 type mem_t is array(0 to ((2**PC_WIDTH) - 1)) of std_logic_vector(31 downto 0);
 type tests_t is array(0 to number_of_tests - 1) of mem_t;
 signal tests : tests_t;
-signal settings : mem_t; --0: begin_test, 1: last_test 
 type spi_state_t is (NOT_SELECTED, INSTRUCTION, WRITE_SETTINGS, ADDRESS, READ);
 
 impure function ocram_ReadMemFile(FileName : STRING) return mem_t is
@@ -92,6 +95,9 @@ signal data_mem_write_all_en   : std_logic;
 
 begin
 
+pass_out <= pass;
+fail_out <= fail;
+	
 clk <= not clk after 31250 ps;
 	
 soc : entity work.soc_top port map(
@@ -161,7 +167,6 @@ data_memory : entity work.data_mem_sram_model generic map(
 	
 process
 begin
-settings <= ocram_ReadMemFile(MODULES_FOLDER);
 tests(1) <= ocram_ReadMemFile(TEST_FOLDER & "super_simple_test.hex");	  --pass
 tests(14) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-addi.hex");	  --pass
 tests(2) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-and.hex");		 --pass
@@ -217,7 +222,7 @@ begin
 	nreset <= '0';
 	wait for 5 us;
 	nreset <= '1'; 
-	for testnum in to_integer(unsigned(settings(0))) to to_integer(unsigned(settings(1))) loop 
+	for testnum in BEGIN_TEST to LAST_TEST loop 
 		wait until d_clk_out'event and d_clk_out = '1';
 		ns_passed := 0;
 		for i in 1 to ((2**DATA_MEM_WIDTH) / 4)  loop
@@ -243,7 +248,7 @@ begin
 		assert ((pass /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" PASS" severity note;
 		assert (ns_passed < 1000000) report "test " & integer'image(testnum) &" timed out" severity failure;
 		nreset <= '0';
-		assert (testnum <= to_integer(unsigned(settings(1))) - 1) report "tests finished" severity failure;
+		assert (testnum <= LAST_TEST) report "tests finished" severity failure;
 		wait for 3 us;
 		nreset <= '1';
 	end loop;
