@@ -48,31 +48,7 @@ end entity;
 
 
 
-architecture behave of soc_top is
-	component SP_32bit 
-		generic(
-			address_width : integer );
-		port(
-			clk : in std_logic;
-			we  : in std_logic;
-			address : in std_logic_vector(address_width - 1 downto 0);
-			data_in  : in std_logic_vector(31 downto 0);
-			data_out : out std_logic_vector(31 downto 0)
-			);
-	end component;
-	component bram 
-		generic (
-			address_width : integer);
-		port(
-			clk : in std_logic;
-			byte_enable : in std_logic_vector(1 downto 0);
-			address : in std_logic_vector(address_width - 1 downto 0);
-			we : in std_logic;
-			write_data : in std_logic_vector(31 downto 0);
-			read_data : out std_logic_vector(31 downto 0)
-			);
-	end component;
-	
+architecture behave of soc_top is	
 	--test interface
 	signal pass_i, pass_i_reg : std_logic;
 	signal fail_i, fail_i_reg : std_logic;
