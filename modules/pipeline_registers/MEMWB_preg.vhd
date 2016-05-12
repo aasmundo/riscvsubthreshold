@@ -43,8 +43,8 @@ begin
 		else
 			wb_we_out <= wb_we_in;
 		end if;
-		wb_src_out <= wb_src_in;
-		rd_out <= rd_in;
+		wb_src_out <= wb_src_in after 1 ns;
+		rd_out <= rd_in after 1 ns;
 		ALU_data_out <= ALU_data_in;
 		mem_load_unsigned_out <= mem_load_unsigned_in;
 		mem_load_width_out <= mem_load_width_in;

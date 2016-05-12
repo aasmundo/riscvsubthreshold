@@ -22,6 +22,7 @@ architecture behave of register_file is
 type register_array is array(1 to 31) of std_logic_vector(31 downto 0);
 signal register_a : register_array;
 signal read_1, read_2 : std_logic_vector(31 downto 0);
+signal g_clk, clk_en : std_logic; 
 begin	
 combi : process(write_register, read_register_1, read_register_2, write_data, register_a, read_1, read_2, reg_write)
 
@@ -46,20 +47,26 @@ begin
 			read_2 <= x"00000000";
 		when others =>
 			read_2 <= register_a(to_integer(unsigned(read_register_2)));
-	end case;
-		
+	end case;		
 end process;
-	
-	
-seq : process(clk)
+
+clk_en <= reg_write or (not nreset);
+
+register_file_clock_gate : entity work.clock_gate port map(
+	clk => clk,
+	en => clk_en,
+	gated_clk => g_clk
+	);
+
+seq : process(g_clk)
 	begin
-		if(clk'event and clk = '1') then
+		if(g_clk'event and g_clk = '1') then
 			if(nreset = '0') then
 				register_a <= (others => (others => '0'));
-			elsif(reg_write = '0' nor to_integer(unsigned(write_register)) = 0) then
+			elsif(to_integer(unsigned(write_register)) /= 0) then
 				register_a(to_integer(unsigned(write_register))) <= write_data;
-			end if;
-				
+				--assert (g_clk = '0') report "write " & integer'image(to_integer(unsigned(write_data))) &" to " & integer'image(to_integer(unsigned(write_register)))severity note;
+			end if;	
 		end if;
 	end process;
 	
