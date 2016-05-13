@@ -42,10 +42,8 @@ begin
   return result;
 end function; -- function reverse_vector
 
-signal Address_reg          : std_logic_vector(address_width - 1 downto 0);
-signal write_data_input_reg : std_logic_vector(31 downto 0);
-signal be_reg       : std_logic_vector(1 downto 0);
-signal write_en_reg : std_logic;
+
+signal n_read_data : std_logic_vector(31 downto 0);
 begin
 
 	
@@ -57,21 +55,18 @@ seq : process(d_clk)
 
 begin
 	if(d_clk'event and d_clk = '1') then
-		Address_reg <= Address;
-		write_data_input_reg <= write_data_input;
-		be_reg <= be;  
-		write_en_reg <= write_en;
+		read_data <= n_read_data;
 	end if;
 end process;
 
 
 
 
-	reroute_be  <= be_reg;
-	reroute_write_en <= write_en_reg;
-	reroute_Address  <=  Address_reg;
-	reroute_write_data_input  <= write_data_input_reg;
-	read_data <= reroute_read_data;
+	reroute_be  <= be;
+	reroute_write_en <= write_en;
+	reroute_Address  <=  Address;
+	reroute_write_data_input  <= write_data_input;
+	n_read_data <= reroute_read_data;
 	reroute_reset_pulse_generator <= reset_pulse_generator;
 	idle <= reroute_idle;
 
