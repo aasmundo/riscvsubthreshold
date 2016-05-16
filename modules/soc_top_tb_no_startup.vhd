@@ -262,7 +262,7 @@ begin
 		assert ((pass /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" PASS" severity note;
 		assert (ns_passed < 1000000 or (testnum > 37 and ns_passed < 24000000)) report "test " & integer'image(testnum) &" timed out" severity failure;
 		nreset <= '0';
-		assert (testnum <= LAST_TEST) report "tests finished" severity failure;
+		assert (testnum < LAST_TEST) report "tests finished" severity failure;
 		wait for 3 us;
 		nreset <= '1';
 	end loop;
