@@ -32,17 +32,11 @@ end saturation;
 
 signal n_sat_cnt : std_logic_vector(1 downto 0);
 
-signal g_clk, clk_en : std_logic;
-signal PC_incr_MEM_d : std_logic_vector(prediction_window - 1  downto 0);
-signal branch_MEM_d : std_logic;
 
 
 begin
-	
-branch_MEM_d <= branch_MEM after 1 ns;
-PC_incr_MEM_d <= PC_incr_MEM after 1 ns;
 
-n_sat_cnt <= saturation(branch_MEM_d, prediction_table(to_integer(unsigned(PC_incr_MEM_d))));
+n_sat_cnt <= saturation(branch_MEM, prediction_table(to_integer(unsigned(PC_incr_MEM))));
 
 combi : process(PC_incr_IF, prediction_table) 
 
@@ -50,21 +44,14 @@ begin
 	prediction <= prediction_table(to_integer(unsigned(PC_incr_IF)))(1);
 end process;
 
-clk_en <=  is_branch_MEM or (not nreset);
 
-branch_predictor_clock_gate : entity work.clock_gate port map(
-	clk => clk,
-	en => clk_en,
-	gated_clk => g_clk
-	);
-
-seq : process(g_clk)
+seq : process(clk)
 begin
-	if(g_clk'event and g_clk = '1') then
+	if(clk'event and clk = '1') then
 		if(nreset = '0') then 
 			prediction_table <= (others => "01");
-		else 
-			prediction_table(to_integer(unsigned(PC_incr_MEM_d))) <= n_sat_cnt;
+		elsif(is_branch_MEM = '1') then 
+			prediction_table(to_integer(unsigned(PC_incr_MEM))) <= n_sat_cnt;
 		end if;
 	end if;
 	
