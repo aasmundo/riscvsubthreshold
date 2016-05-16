@@ -8,6 +8,7 @@ set search_path ~/
 set target_library "~/S28_coreLVTPB4_AFBB_ecsm_350mV.db"
 set fileFormat vhdl
 
+read_vhdl "~/newWorkdir/riscvsubthreshold/modules/clock_gate.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_decode/register_file.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_fetch/branch_predictor.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_decode/control.vhd"
