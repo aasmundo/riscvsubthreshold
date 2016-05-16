@@ -9,6 +9,7 @@ use work.constants.all;
 entity soc_top is
 	port(
 		clk          : in std_logic;
+		d_clk        : in std_logic;
 		nreset       : in std_logic;
 	    
 		--testbench
@@ -69,7 +70,6 @@ architecture behave of soc_top is
 	signal startup_we		: std_logic;
 	signal startup_done		: std_logic;
 	
-	signal d_clk            : std_logic; 
 	signal clk_reset, 
 	reset_last   : std_logic;
 	signal sync_reset : std_logic;
@@ -150,15 +150,6 @@ begin
 	cpu_sleep <= (not startup_done) or (pass_i_reg or fail_i_reg) or sleep_ctl;
 	
 	
-	clk_reset <= not (reset_last and not nreset);
-	
-	
-	clk_reset_process : process(clk)
-	begin	
-		if(clk'event and clk = '1') then
-			reset_last <= nreset;	
-		end if;
-	end process;
 	
 	
 	sync_reset_process : process(d_clk)
@@ -388,14 +379,6 @@ begin
 	
 	--);
 	
-	clock_divider : entity work.clock_divider_cnt generic map(
-		division => 4
-		)	
-	port map(
-		clk => clk,
-		nreset => clk_reset,
-		d_clk => d_clk	
-		);
 		
 	instruction_memory : entity work.instr_mem_wrap generic map(
 		address_width => INSTRUCTION_MEM_WIDTH)
