@@ -55,10 +55,12 @@ begin
 			else
 				state_n <= 1;
 			end if;
-		when 1|2|3|4|5|6|7|8|9|10|11|12|13 =>
+		when 1|2|3|4|5|6|7|8|9|10|11|12 =>
 			null;
-		when 14 =>	
+		when 13 =>
 			output_reg_we <= '1';
+		when 14 =>	
+			null;
 		when 15 =>
 			idle_i <= '1';
 			state_n <= 0;
