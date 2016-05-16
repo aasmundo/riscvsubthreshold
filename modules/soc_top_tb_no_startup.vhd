@@ -8,6 +8,7 @@ use std.textio.all;
 library work;
 use work.constants.all;
 
+LIBRARY worklib;
 
 entity soc_top_tb_no_startup is
 	port(
@@ -22,7 +23,7 @@ constant test_folder : String(1 to 52) :=  "C:\prosjektoppgave\riscvsubthreshold
 constant modules_folder : String(1 to 57) := "C:\prosjektoppgave\riscvsubthreshold\modules\settings.hex";
 constant number_of_tests : integer := 40;
 signal begin_test : integer := 0; 
-signal last_test  : integer := 37;
+signal last_test  : integer := 0;
 type mem_t is array(0 to ((2**PC_WIDTH) - 1)) of std_logic_vector(31 downto 0);
 type tests_t is array(0 to number_of_tests - 1) of mem_t;
 signal tests : tests_t;
@@ -56,6 +57,8 @@ signal test_num : integer := 0;
 
 
 signal clk       :  std_logic := '0';
+signal d_clk     :  std_logic;
+signal clk_cnt, clk_cnt_n   :  std_logic_vector(3 downto 0) := "0000";
 signal nreset    :  std_logic;
 --testbench
 signal pass      :  std_logic;
@@ -99,10 +102,19 @@ pass_out <= pass;
 fail_out <= fail;
 	
 clk <= not clk after 31250 ps;
+clk_cnt_n <= std_logic_vector(unsigned(clk_cnt) + 1);
+d_clk <= clk_cnt(3);
+clock_div : process(clk, clk_cnt_n, clk_cnt)
+begin
+	if(clk'event and clk = '1') then
+		clk_cnt <= clk_cnt_n;
+	end if;
+end process;
 	
-soc : entity work.soc_top port map(
+soc : entity worklib.soc_top port map(
 
 	clk       => clk,
+	d_clk     => d_clk,
 	nreset    => nreset,
 	
 	--testbench
@@ -167,10 +179,10 @@ data_memory : entity work.data_mem_sram_model generic map(
 	
 process
 begin
-tests(1) <= ocram_ReadMemFile(TEST_FOLDER & "super_simple_test.hex");	  --pass
+tests(0) <= ocram_ReadMemFile(TEST_FOLDER & "super_simple_test.hex");	  --pass
 tests(14) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-addi.hex");	  --pass
-tests(2) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-and.hex");		 --pass
-tests(3) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-andi.hex");		 --pass
+tests(39) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-and.hex");		 --pass
+tests(28) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-andi.hex");		 --pass
 tests(4) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-auipc.hex");
 tests(5) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-beq.hex");		--pass
 tests(6) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-bge.hex"); 		--pass
@@ -188,15 +200,15 @@ tests(17) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lhu.hex");
 tests(18) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lui.hex");
 tests(19) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-lw.hex");
 tests(20) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-or.hex");
-tests(21) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-ori.hex");
+tests(29) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-ori.hex");
 tests(22) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sb.hex");
 tests(37) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sh.hex");
 tests(24) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-simple.hex");
 tests(25) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sll.hex");
 tests(26) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-slt.hex");
 tests(27) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-slti.hex");
-tests(28) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sra.hex");
-tests(29) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-srai.hex");
+tests(3) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sra.hex");
+tests(21) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-srai.hex");
 tests(30) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-srl.hex");
 tests(31) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-srli.hex");
 tests(32) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sub.hex");
@@ -204,10 +216,10 @@ tests(33) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-sw.hex");
 tests(34) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-xor.hex");
 tests(35) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-xori.hex");
 tests(36) <= ocram_ReadMemFile(TEST_FOLDER & "rv32ui-p-add.hex");
---tests(0) <= ocram_ReadMemFile(TEST_FOLDER & "asoc_man_link.hex");
-tests(38) <= ocram_ReadMemFile(TEST_FOLDER & "sleep_test.hex");
-tests(0) <= ocram_ReadMemFile(TEST_FOLDER & "spi_transfer_test.hex");
---tests(0) <= ocram_ReadMemFile(TEST_FOLDER & "rdcycles_test.hex");
+tests(2) <= ocram_ReadMemFile(TEST_FOLDER & "asoc_man_link.hex");
+--tests(38) <= ocram_ReadMemFile(TEST_FOLDER & "sleep_test.hex");
+tests(1) <= ocram_ReadMemFile(TEST_FOLDER & "spi_transfer_test.hex");
+tests(38) <= ocram_ReadMemFile(TEST_FOLDER & "rdcycles_test.hex");
 
 wait;
 end process;
@@ -218,9 +230,9 @@ variable start_read_seq : std_logic_vector(0 to 23) := "00000011" & x"0000";
 variable ns_passed : integer := 0;
 begin
 	nreset <= '1';
-	wait for 5 us;
+	wait for 1 us;
 	nreset <= '0';
-	wait for 5 us;
+	wait for 1 us;
 	nreset <= '1'; 
 	for testnum in BEGIN_TEST to LAST_TEST loop 
 		wait until d_clk_out'event and d_clk_out = '1';
@@ -238,15 +250,17 @@ begin
 		instr_mem_write_all_en <= '0';
 		nreset <= '0';
 		wait until d_clk_out'event and d_clk_out = '1';
+		wait for 30 ns;
 		nreset <= '1';
-		while (pass = '0' and fail = '0' and ns_passed < 1000000) loop
+		wait for 2 us;
+		while (pass = '0' and fail = '0' and (ns_passed < 1000000 or (testnum > 37 and ns_passed < 24000000))) loop
 			miso <= not mosi;
 			wait for 5 ns;
 			ns_passed := ns_passed + 5;
 		end loop;
 		assert ((fail /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" FAIL" severity failure;
 		assert ((pass /= '1') or (nreset = '0')) report "test " & integer'image(testnum) &" PASS" severity note;
-		assert (ns_passed < 1000000) report "test " & integer'image(testnum) &" timed out" severity failure;
+		assert (ns_passed < 1000000 or (testnum > 37 and ns_passed < 24000000)) report "test " & integer'image(testnum) &" timed out" severity failure;
 		nreset <= '0';
 		assert (testnum <= LAST_TEST) report "tests finished" severity failure;
 		wait for 3 us;
