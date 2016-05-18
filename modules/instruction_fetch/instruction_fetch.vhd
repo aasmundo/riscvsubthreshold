@@ -6,7 +6,8 @@ use work.constants.all;
 
 entity instruction_fetch is
 	port(
-	clk : in std_logic;	
+	clk : in std_logic;	   
+	pwr_en : in std_logic;
 	nreset : in std_logic;
 	
 	
@@ -105,6 +106,7 @@ instruction_o <= instruction;
 
 PC : entity work.PC port map(
 	clk => clk,
+	pwr_en => pwr_en,
 	we => PC_we,
 	nreset => nreset,
 	PC_in => PC_in,

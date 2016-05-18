@@ -183,6 +183,7 @@ inst_memory_write_enable <= '0';
 
 instruction_fetch : entity work.instruction_fetch port map(
     clk                 => clk,
+	pwr_en              => pwr_en,
     nreset              => nreset,
     control_transfer    => control_transfer_MEM,
     new_PC              => new_PC_MEM,

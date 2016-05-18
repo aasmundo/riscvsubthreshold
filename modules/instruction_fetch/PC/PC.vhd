@@ -30,7 +30,7 @@ library work;
 use work.constants.all;
 
 entity PC is
-	port(clk, we, nreset 	: in std_logic;
+	port(clk, we, nreset, pwr_en 	: in std_logic;
 	PC_out 				: out std_logic_vector(PC_WIDTH - 1 downto 0);
 	PC_next             : out std_logic_vector(PC_WIDTH - 1 downto 0);
 	PC_in				: in std_logic_vector(PC_WIDTH - 1 downto 0)	
@@ -41,8 +41,22 @@ end PC;
 
 architecture behave of PC is 
 signal PC : std_logic_vector(PC_WIDTH - 1 downto 0);
+signal PC_in_with_nreset	: std_logic_vector(PC_WIDTH - 1 downto 0);
+signal we_with_nreset       : std_logic;
 begin
 
+	
+PC_regs : entity work.PC_reg port map(
+	clk => clk,
+	we => we,
+	pwr_en => pwr_en,
+	PC_in => PC_in_with_nreset,
+	PC_out => PC
+	);
+PC_out <= PC;	
+
+PC_in_with_nreset <= PC_in when nreset = '1' else std_logic_vector(to_unsigned(512,PC_WIDTH));
+we_with_nreset <= we when nreset = '1' else '1';
 combi : process(PC_in, PC, we)
 begin
 	case(we) is
@@ -54,20 +68,9 @@ begin
 			null;
 	end case;
 
-	PC_out <= PC;
 end process;
 
 --assert (PC(1) /= '0' or PC(0) /= '0') report "PC not aligned" severity failure;
 --assert (PC < x"800") report "PC more than 0x800" severity failure;
-seq : process(clk, we, nreset)
-begin
-	if(clk'event and clk = '1') then
-		if(nreset = '0') then
-			PC <= std_logic_vector(to_unsigned(512,PC_WIDTH));
-		elsif(we = '1') then
-			PC <= PC_in;
-		end if;
-	end if;
-end process;
 
 end behave;
