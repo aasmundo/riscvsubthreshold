@@ -422,7 +422,7 @@ begin
 		);
 	
 	
-	AAsmund_RISC : entity work.top	port map
+	AAsmund_RISC : entity work.top_pg_wrap	port map
 		(
 		clk => d_clk,
 		nreset => sync_reset,
