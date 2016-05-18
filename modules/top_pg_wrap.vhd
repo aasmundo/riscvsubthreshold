@@ -54,6 +54,7 @@ begin
 		(
 		clk => clk,
 		nreset => nreset,
+		pwr_en => pwr_en,
 		
 		sleep => cpu_sleep,
 		

@@ -7,6 +7,7 @@ entity register_file is
 	port(
 	clk,
 	nreset,
+	pwr_en,
 	reg_write 						: in std_logic; 
 	read_register_1,
 	read_register_2, 
@@ -19,11 +20,24 @@ entity register_file is
 end register_file;
 
 architecture behave of register_file is
-type register_array is array(1 to 31) of std_logic_vector(31 downto 0);
-signal register_a : register_array;
 signal read_1, read_2 : std_logic_vector(31 downto 0);
-begin	
-combi : process(write_register, read_register_1, read_register_2, write_data, register_a, read_1, read_2, reg_write)
+signal write_enable : std_logic_vector(31 downto 1);
+signal write_data_w_nreset : std_logic_vector(31 downto 0);
+signal data : std_logic_vector(991 downto 0);
+begin
+	
+register_regs : entity work.register_file_regs_wrap	port map(
+	clk => clk,
+	pwr_en => pwr_en,
+	write_enable => write_enable,
+	data => data,
+	write_data => write_data_w_nreset
+	);
+
+
+write_data_w_nreset <= write_data when nreset = '1' else (others => '0');
+	
+combi : process(write_register, read_register_1, read_register_2, write_data, data, read_1, read_2, reg_write)
 
 begin
 	if(read_register_1 = write_register and read_register_1 /= "00000" and reg_write = '1') then read_data_1 <= write_data; 
@@ -38,30 +52,30 @@ begin
 		when 0 =>
 			read_1 <= x"00000000";
 		when others =>
-			read_1 <= register_a(to_integer(unsigned(read_register_1))); 
+			read_1 <= data(((to_integer(unsigned(read_register_1))*32) - 1) downto ((to_integer(unsigned(read_register_1)-1) *32))); 
 	end case;
 		
 	case (to_integer(unsigned(read_register_2))) is
 		when 0 =>
 			read_2 <= x"00000000";
 		when others =>
-			read_2 <= register_a(to_integer(unsigned(read_register_2)));
+			read_2 <= data(((to_integer(unsigned(read_register_2))*32) - 1) downto ((to_integer(unsigned(read_register_2)-1) *32)));
 	end case;
+	
+	if(nreset = '0') then
+		write_enable <= (others => '1');
+	else	
+		for i in 1 to 31 loop
+			if(to_integer(unsigned(write_register)) = i) then
+				write_enable(i) <= reg_write;
+			else
+				write_enable(i) <= '0';
+			end if;
+		end loop;
+	end if;
 		
 end process;
-	
-	
-seq : process(clk)
-	begin
-		if(clk'event and clk = '1') then
-			if(nreset = '0') then
-				register_a <= (others => (others => '0'));
-			elsif(reg_write = '0' nor to_integer(unsigned(write_register)) = 0) then
-				register_a(to_integer(unsigned(write_register))) <= write_data;
-			end if;
-				
-		end if;
-	end process;
+
 	
 end behave;
 	
