@@ -34,6 +34,8 @@ signal write_data, write_data_with_reset   : std_logic_vector(1 downto 0);
 signal write_enable, write_enable_with_reset : std_logic_vector((2**prediction_window) - 1 downto 0);
 
 signal data : std_logic_vector(((2**prediction_window) * 2) - 1 downto 0);
+
+signal old_sat_cnt : std_logic_vector(1 downto 0);
 begin
 
 write_enable_with_reset <= write_enable when nreset = '1' else (others => '1');
@@ -49,7 +51,9 @@ port map(
 	write_enable => write_enable_with_reset
 	);
 
-write_data <= saturation(branch_MEM, data((2* to_integer(unsigned(PC_incr_MEM))) + 1 downto (2* to_integer(unsigned(PC_incr_MEM)))));
+old_sat_cnt <= data((2* to_integer(unsigned(PC_incr_MEM))) + 1 downto (2* to_integer(unsigned(PC_incr_MEM))));
+
+write_data <= saturation(branch_MEM, old_sat_cnt);
 
 combi : process(PC_incr_IF, data, is_branch_MEM, PC_incr_MEM) 
 
