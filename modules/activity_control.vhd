@@ -4,6 +4,7 @@ use IEEE.STD_LOGIC_1164.all;
 entity activity_control is
 	port(	
 	clk                    : in  std_logic;
+	pwr_en                 : in  std_logic;
 	
 	sleep,
 	stall_ID,  
@@ -26,6 +27,7 @@ end activity_control;
 architecture behave of activity_control is
 signal stall_i : std_logic;
 signal sleeping	: std_logic;
+signal sleep_with_nreset : std_logic;
 begin
 	counter_enable <= not sleep;	
 	stall_i <= (sleeping or stall_ID) and nreset;
@@ -37,16 +39,13 @@ begin
 	init_sleep <= sleep and (not sleeping);
 	stall <= stall_i;
 	
-	seq : process(clk) is
-	begin
-		if(clk'event and clk = '1') then
-			if(nreset = '0') then
-				sleeping <= '0';
-			else
-				sleeping <= sleep;
-			end if;
-			
-		end if;
-		
-	end process;
+	sleep_with_nreset <= sleep when nreset = '1' else '0';
+	
+	sleep_reg : entity work.sleep_reg_pg_wrap port map(
+		clk => clk,
+		pwr_en => pwr_en,
+		d => sleep_with_nreset,
+		q => sleeping
+		);
+
 end behave;

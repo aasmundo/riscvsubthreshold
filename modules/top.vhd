@@ -412,13 +412,15 @@ write_back : entity work.write_back port map(
 	
 counter : entity work.clock_counter port map(
 	clk => clk,
+	pwr_en => pwr_en,
 	cnt_en => counter_enable,
 	nreset => nreset,
 	cnt    => clock_count
 	);
 
 activity_control : entity work.activity_control port map(
-	clk => clk,	
+	clk => clk,
+	pwr_en => pwr_en,
 	sleep => sleep,
 	stall_ID => stall_ID,  
 	nreset => nreset,
