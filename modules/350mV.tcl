@@ -8,16 +8,21 @@ set search_path ~/
 set target_library "~/S28_coreLVTPB4_AFBB_ecsm_350mV.db"
 set fileFormat vhdl
 
+read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_decode/register_file_regs_wrap.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_decode/register_file.vhd"
+read_vhdl "~/newWorkdir/riscvsubthreshold/modules/branch_predictor_reg_wrap.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_fetch/branch_predictor.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_decode/control.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/constants.vhdl"
+read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_fetch/PC/PC_reg.vhd"
+read_vhdl "~/newWorkdir/riscvsubthreshold/modules/branch_predictor_pg.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/clock_divider_cnt.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/write_back/clock_counter.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/spi_startup.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/SPI_top3.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/SPI_controller.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/activity_control.vhd"
+read_vhdl "~/newWorkdir/riscvsubthreshold/modules/execute/ALU/*.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/execute/ALU/alu.vhdl"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/execute/forwarder.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/execute/execute.vhd"
@@ -39,6 +44,7 @@ read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_decode/instruction
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_fetch/instruction_fetch.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instruction_fetch/two_level_bp.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/top.vhd"
+read_vhdl "~/newWorkdir/riscvsubthreshold/modules/top_pg_wrap.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/data_mem_sram_model.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/instr_mem_sram_model.vhd"
 read_vhdl "~/newWorkdir/riscvsubthreshold/modules/sleep_controller.vhd"
@@ -58,6 +64,6 @@ compile
 check_design
 
 all_high_fanout -nets
-write -f verilog -o soc_top.v -hierarchy 
+write -f verilog -o soc_top_pg.v -hierarchy 
 
 
