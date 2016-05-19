@@ -20,6 +20,9 @@ entity register_file is
 end register_file;
 
 architecture behave of register_file is
+type register_array_t is array(1 to 31) of std_logic_vector(31 downto 0);
+signal register_array : register_array_t;
+
 signal read_1, read_2 : std_logic_vector(31 downto 0);
 signal write_enable : std_logic_vector(31 downto 1);
 signal write_data_w_nreset : std_logic_vector(31 downto 0);
@@ -35,9 +38,16 @@ register_regs : entity work.register_file_regs_wrap	port map(
 	);
 
 
+process(data)
+begin
+	for i in 1 to 31 loop
+		register_array(i) <= data((i*32) - 1 downto (i-1) *32);
+	end loop;
+end process;
+	
 write_data_w_nreset <= write_data when nreset = '1' else (others => '0');
 	
-combi : process(write_register, read_register_1, read_register_2, write_data, data, read_1, read_2, reg_write)
+combi : process(write_register, read_register_1, read_register_2, write_data, register_array, data, read_1, read_2, reg_write)
 
 begin
 	if(read_register_1 = write_register and read_register_1 /= "00000" and reg_write = '1') then read_data_1 <= write_data; 
@@ -52,14 +62,14 @@ begin
 		when 0 =>
 			read_1 <= x"00000000";
 		when others =>
-			read_1 <= data(((to_integer(unsigned(read_register_1))*32) - 1) downto ((to_integer(unsigned(read_register_1)-1) *32))); 
+			read_1 <= register_array(to_integer(unsigned(read_register_1)));
 	end case;
 		
 	case (to_integer(unsigned(read_register_2))) is
 		when 0 =>
 			read_2 <= x"00000000";
 		when others =>
-			read_2 <= data(((to_integer(unsigned(read_register_2))*32) - 1) downto ((to_integer(unsigned(read_register_2)-1) *32)));
+			read_2 <= register_array(to_integer(unsigned(read_register_2)));
 	end case;
 	
 	if(nreset = '0') then
