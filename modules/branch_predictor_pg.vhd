@@ -17,6 +17,8 @@ port(
 end branch_predictor_pg;
 
 architecture behave of branch_predictor_pg is
+type prediction_table_t is array(0 to (2**prediction_window) - 1) of std_logic_vector(1 downto 0);
+signal prediction_table : prediction_table_t;
 
 function saturation (branch : std_logic; sat_cnt : std_logic_vector)
                  return std_logic_vector is
@@ -35,7 +37,6 @@ signal write_enable, write_enable_with_reset : std_logic_vector((2**prediction_w
 
 signal data : std_logic_vector(((2**prediction_window) * 2) - 1 downto 0);
 
-signal old_sat_cnt : std_logic_vector(1 downto 0);
 begin
 
 write_enable_with_reset <= write_enable when nreset = '1' else (others => '1');
@@ -51,9 +52,14 @@ port map(
 	write_enable => write_enable_with_reset
 	);
 
-old_sat_cnt <= data((2* to_integer(unsigned(PC_incr_MEM))) + 1 downto (2* to_integer(unsigned(PC_incr_MEM))));
+process(data)
+begin
+	for i in 0 to (2**prediction_window) - 1 loop
+		prediction_table(i) <= data(2*i+1) & data(2*i);
+	end loop;
+end process;
 
-write_data <= saturation(branch_MEM, old_sat_cnt);
+write_data <= saturation(branch_MEM, prediction_table(to_integer(unsigned(PC_incr_MEM))));
 
 combi : process(PC_incr_IF, data, is_branch_MEM, PC_incr_MEM) 
 
