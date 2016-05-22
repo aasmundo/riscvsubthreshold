@@ -1,6 +1,6 @@
 *AMSD Control file for AMSD+Ultrasim
 
-include "soc_top_no_opt.scs"
+include "soc_top_power_gated.scs"
 include "acf.scs"
 
 amsd {
