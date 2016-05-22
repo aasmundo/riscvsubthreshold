@@ -43,7 +43,10 @@ for i in range(0, concurrent):
     f.write("cd ../../.. \n")
 f.close()
 call(["chmod +x runall"],  shell=True)
-call(["./runall"], shell=True)
+print "Run all now? (y/n)"
+run = raw_input()
+if(run == "y"):
+    call(["./runall"], shell=True)
 
 
 
