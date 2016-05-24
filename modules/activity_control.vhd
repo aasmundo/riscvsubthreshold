@@ -35,7 +35,7 @@ begin
 	flush_IFID <= control_transfer_MEM or sleep or not nreset;
 	flush_IDEX <= control_transfer_MEM or sleep or stall_i or not nreset;
 	flush_EXMEM <= control_transfer_MEM or sleep or not nreset;
-	flush_MEMWB <= not nreset;
+	flush_MEMWB <= not nreset or (sleep and sleeping);
 	init_sleep <= sleep and (not sleeping);
 	stall <= stall_i;
 	
