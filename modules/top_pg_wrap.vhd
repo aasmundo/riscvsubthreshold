@@ -33,7 +33,7 @@ end top_pg_wrap;
 
 architecture behave of top_pg_wrap is
 signal pwr_en, n_pwr_en, cpu_sleep : std_logic;
-type state_t is (ENABLE, ENABLE_TO_DISABLE, DISABLE);
+type state_t is (ENABLE, ENABLE_TO_DISABLE, DISABLE, DISABLE_TO_ENABLE);
 signal state, n_state : state_t;
 
 --isolation cells
@@ -110,10 +110,13 @@ begin
 		when DISABLE =>
 			cpu_sleep <= '1';
 			if(sleep = '0') then
-				n_state <= ENABLE;
+				n_state <= DISABLE_TO_ENABLE;
 			else
 				n_pwr_en <= '0';
 			end if;
+		when DISABLE_TO_ENABLE =>
+			n_state <= ENABLE;
+			cpu_sleep <= '1';
 		when others =>
 			null;
 	end case;
