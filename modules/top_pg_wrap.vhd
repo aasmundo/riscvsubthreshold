@@ -34,7 +34,22 @@ end top_pg_wrap;
 architecture behave of top_pg_wrap is
 signal pwr_en, n_pwr_en, cpu_sleep : std_logic;
 type state_t is (ENABLE, ENABLE_TO_DISABLE, DISABLE, DISABLE_TO_ENABLE);
-signal state, n_state : state_t;
+signal state, n_state : state_t;		  
+
+--pragma synthesis_off
+signal pwr_en_cnt : integer := 0;
+signal pwr_en_not_cnt : integer := 0; 
+
+signal save_state_1_cnt : integer := 0;
+signal save_state_2_cnt : integer := 0;
+signal first_sleep_clk_cnt : integer := 0;
+signal second_sleep_clk_cnt : integer := 0;
+signal deep_sleep_cnt : integer := 0;
+signal wake_up_cnt : integer := 0;
+signal first_after_wake_up_cnt : integer := 0; 
+signal awake_cnt : integer := 0;   
+signal monitor_state : integer := 0;
+--pragma synthesis_on
 
 --isolation cells
 signal pass_iso        	              : std_logic;
@@ -135,6 +150,61 @@ begin
 		end if;		
 	end if;
 end process;
+
+--pragma synthesis_off
+process(clk)
+begin
+	if(clk'event and clk = '1') then
+		if(nreset = '0') then
+			pwr_en_not_cnt <= 0;
+			pwr_en_cnt <= 0;
+			save_state_1_cnt <= 0;
+			save_state_2_cnt <= 0;
+			first_sleep_clk_cnt<= 0;
+			second_sleep_clk_cnt <= 0;
+			deep_sleep_cnt <= 0;
+			wake_up_cnt <= 0;
+			first_after_wake_up_cnt <= 0;
+			awake_cnt <= 0; 
+			monitor_state <= 0;
+		else
+			if(pwr_en = '0') then
+				pwr_en_not_cnt <= pwr_en_not_cnt + 1;
+			else
+				pwr_en_cnt     <= pwr_en_cnt + 1;
+			end if;	 
+			if(state = ENABLE and sleep = '0') then
+				awake_cnt <= awake_cnt + 1;
+				monitor_state <= 0;
+			elsif(state = ENABLE and sleep = '1') then
+				save_state_1_cnt <= save_state_1_cnt + 1;
+			elsif(state = ENABLE_TO_DISABLE) then
+				save_state_2_cnt <= save_state_2_cnt + 1;
+			elsif(state = DISABLE) then
+				if(sleep = '1') then
+					if(monitor_state = 0) then
+						first_sleep_clk_cnt <= first_sleep_clk_cnt + 1;
+					elsif(monitor_state = 1) then
+						second_sleep_clk_cnt <= second_sleep_clk_cnt + 1;
+					else
+						deep_sleep_cnt <= deep_sleep_cnt + 1;
+					end if;
+				else
+					awake_cnt <= awake_cnt + 1;
+				end if;
+				monitor_state <= monitor_state + 1;
+			elsif(state = DISABLE_TO_ENABLE) then
+				if(monitor_state > 1) then
+					wake_up_cnt <= wake_up_cnt + 1;
+				else
+					awake_cnt <= awake_cnt + 1;
+				end if;
+			end if;
+		end if;		
+	end if;
+end process;
+
+--pragma synthesis_on
 
 
 end behave;

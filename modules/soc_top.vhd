@@ -142,6 +142,13 @@ architecture behave of soc_top is
 	--testsignal
 	signal mem_re_last : std_logic;
 	
+	--pragma synthesis_off
+	signal sleep_cnt      : integer := 0;
+	signal awake_cnt      : integer := 0;
+	signal dmem_read_cnt  : integer := 0;
+	signal dmem_write_cnt : integer := 0;
+	signal dmem_idle_cnt  : integer := 0;
+	--pragma synthesis_on
 begin
 	pass <= pass_i_reg;
 	fail <= fail_i_reg;
@@ -449,5 +456,35 @@ begin
 	
 	cpu_instr_data_w <= x"00000000";
 	
-	cpu_instr_re <= '1'; --TODO: Implement read enable signal
+	cpu_instr_re <= '1'; --TODO: Implement read enable signal	 
+	
+	--pragma synthesis_off
+	process(d_clk)
+	begin
+		if(d_clk = '1' and d_clk'event) then
+			if(sync_reset = '0') then
+				sleep_cnt <= 0;
+				awake_cnt <= 0;
+				dmem_read_cnt <= 0;
+				dmem_write_cnt <= 0;
+				dmem_idle_cnt <= 0;
+			else
+				if(cpu_data_re = '1') then
+					dmem_read_cnt <= dmem_read_cnt + 1;
+				elsif(cpu_data_we = '1') then
+					dmem_write_cnt <= dmem_write_cnt + 1;
+				else
+					dmem_idle_cnt <= dmem_idle_cnt + 1;
+				end if;
+				if(cpu_sleep = '1') then
+					sleep_cnt <= sleep_cnt + 1;
+				else
+					awake_cnt <= awake_cnt + 1;	
+				end if;
+			end if;
+		end if;
+			
+	end process;
+	
+	--pragma synthesis_on
 end behave;
