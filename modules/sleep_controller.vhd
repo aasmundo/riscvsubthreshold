@@ -24,7 +24,13 @@ signal state, state_n : state_t;
 
 signal cnt, cnt_n, cnt_minus_one : std_logic_vector(31 downto 0);
 signal time_or_spi, time_or_spi_n : std_logic;
-signal sleep_n : std_logic;
+signal sleep_n : std_logic;	  
+--pragma synthesis_off
+signal spi_sleep_cnt : integer := 0;
+signal time_sleep_cnt : integer := 0;
+
+--pragma synthesis_on
+
 begin
 
 cnt_minus_one <= std_logic_vector(unsigned(cnt) - 1);
@@ -80,7 +86,26 @@ begin
 			state <= state_n;
 		end if;
 	end if;
+end process; 
+
+--pragma synthesis_off
+process(clk)
+begin
+	if(clk'event and clk = '1') then
+		if(nreset = '0') then
+			spi_sleep_cnt <= 0;
+			time_sleep_cnt <= 0;
+			
+		else
+			if(state = TIME_WAIT) then
+				time_sleep_cnt <= time_sleep_cnt + 1;
+			elsif(state = SPI_WAIT) then
+				spi_sleep_cnt <= spi_sleep_cnt + 1;
+			end if;		
+		end if;
+	end if;
 end process;
+--pragma synthesis_on
 	
 end behave;
 	
