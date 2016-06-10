@@ -4,10 +4,10 @@ simulator lang=spice lookup=spectre
 
 
 
-.usim_opt dc=0 vh=0.35 vl=0.0 sim_mode=a speed=1
+.usim_opt dc=0 vh=0.35 vl=0.0 sim_mode=a speed=5
 .saveNodes options rawfmt=sst2 save=all
 .tran 1n NUM_OF_TESTS999u
-.probe v(*) depth=2 preserve=port
-.probe i(*) depth=5 preserve=port
+.probe v(*) depth=7 preserve=port
+.probe i(*) depth=7 preserve=port
 
 .end
